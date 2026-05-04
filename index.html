@@ -5,14 +5,13 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Live Cờ Tướng</title>
 
-<style>
-body {
-  margin:0;
-  background:black;
-  font-family:Arial;
-}
+<!-- Firebase v8 -->
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
 
-/* VIDEO */
+<style>
+body { margin:0; background:black; font-family:Arial; }
+
 iframe {
   position:fixed;
   width:100%;
@@ -20,42 +19,36 @@ iframe {
   border:none;
 }
 
+/* overlay pro */
 .overlay {
-  position: fixed;
-  top: 20px;
-  left: 0;
-  width: 100%;
-  height: 0;
-  z-index: 10;
-  pointer-events: none;
+  position:fixed;
+  top:20px;
+  width:100%;
 }
 
-/* STYLE CHUNG */
 .player {
-  position: absolute;
-  padding: 12px 28px;
-  border-radius: 12px;
-  color: #fff;
-  font-weight: bold;
-  font-size: 20px;
-  letter-spacing: 1px;
-  border: 2px solid rgba(255,255,255,0.3);
+  position:absolute;
+  padding:12px 28px;
+  border-radius:12px;
+  color:#fff;
+  font-weight:bold;
+  font-size:20px;
+  border:2px solid rgba(255,255,255,0.3);
   backdrop-filter: blur(6px);
-  box-shadow: 0 6px 15px rgba(0,0,0,0.6);
+  box-shadow:0 6px 15px rgba(0,0,0,0.6);
 }
 
-/* 🔴 BÊN TRÁI */
 .red {
-  left: 80px;
+  left:80px;
   background: linear-gradient(135deg, #ff1a1a, #800000);
 }
 
-/* 🔵 BÊN PHẢI */
 .blue {
-  right: 80px;
+  right:80px;
   background: linear-gradient(135deg, #1a75ff, #002b80);
 }
-/* PANEL */
+
+/* panel */
 .panel {
   position:fixed;
   bottom:20px;
@@ -69,11 +62,7 @@ iframe {
   z-index:20;
 }
 
-input {
-  padding:6px;
-  border:none;
-  border-radius:5px;
-}
+input { padding:6px; border-radius:5px; border:none; }
 
 button {
   padding:6px 10px;
@@ -81,23 +70,22 @@ button {
   border-radius:5px;
   background:#00c853;
   color:white;
-  cursor:pointer;
 }
 </style>
 </head>
 
 <body>
 
-<!-- OVERLAY -->
+<!-- overlay -->
 <div class="overlay">
   <div class="player red" id="name1">Đỏ</div>
   <div class="player blue" id="name2">Xanh</div>
 </div>
 
-<!-- VIDEO -->
+<!-- video -->
 <iframe src="https://vdo.ninja/?view=quocdang&cleanoutput&noaudio&buffer=0"></iframe>
 
-<!-- PANEL -->
+<!-- panel -->
 <div class="panel" id="panel">
   <input id="input1" placeholder="Tên đỏ">
   <input id="input2" placeholder="Tên xanh">
@@ -105,31 +93,44 @@ button {
 </div>
 
 <script>
-// Ẩn panel khi live
+// 🔥 CONFIG CỦA BẠN (đã gắn)
+const firebaseConfig = {
+  apiKey: "AIzaSyCm62HBdHOtdlBxXqhV6aMtznDQOykShjQ",
+  authDomain: "quocdang1-7e50b.firebaseapp.com",
+  databaseURL: "https://quocdang1-7e50b-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "quocdang1-7e50b",
+  storageBucket: "quocdang1-7e50b.firebasestorage.app",
+  messagingSenderId: "30464017854",
+  appId: "1:30464017854:web:37d3193bf65aacb4aee5ef"
+};
+
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+
+// 🔥 realtime listener
+db.ref("live").on("value", (snap) => {
+  const data = snap.val();
+  if (!data) return;
+
+  if (data.red) document.getElementById("name1").innerText = data.red;
+  if (data.blue) document.getElementById("name2").innerText = data.blue;
+});
+
+// update từ panel
+function update() {
+  const red = document.getElementById("input1").value;
+  const blue = document.getElementById("input2").value;
+
+  db.ref("live").set({
+    red: red,
+    blue: blue
+  });
+}
+
+// ẩn panel khi live
 const urlParams = new URLSearchParams(window.location.search);
 if (urlParams.get("live") === "1") {
   document.getElementById("panel").style.display = "none";
-}
-
-// Load lại dữ liệu
-window.onload = () => {
-  if(localStorage.name1) name1.innerText = localStorage.name1;
-  if(localStorage.name2) name2.innerText = localStorage.name2;
-};
-
-// Update tên
-function update() {
-  const n1 = input1.value;
-  const n2 = input2.value;
-
-  if(n1){
-    name1.innerText = n1;
-    localStorage.name1 = n1;
-  }
-  if(n2){
-    name2.innerText = n2;
-    localStorage.name2 = n2;
-  }
 }
 </script>
 
