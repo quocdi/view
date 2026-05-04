@@ -23,33 +23,38 @@ iframe {
 /* OVERLAY */
 .overlay {
   position:fixed;
-  top:15px;
-  left:50%;
-  transform:translateX(-50%);
+  top:20px;
+  left:0;
+  width:100%;
   display:flex;
-  gap:30px; /* khoảng cách giữa 2 tên */
+  justify-content:space-between;
+  align-items:center;
+  padding:0 80px; /* khoảng cách 2 bên */
   z-index:10;
   pointer-events:none;
 }
 
-/* Tên đỏ */
-.red {
-  background: linear-gradient(135deg, #ff0000, #990000);
-  padding:10px 20px;
-  border-radius:10px;
+/* STYLE CHUNG */
+.player {
+  padding:12px 26px;
+  border-radius:12px;
   color:#fff;
   font-weight:bold;
-  box-shadow:0 4px 10px rgba(0,0,0,0.5);
+  font-size:20px;
+  letter-spacing:1px;
+  border:2px solid rgba(255,255,255,0.3);
+  backdrop-filter: blur(6px);
+  box-shadow:0 6px 15px rgba(0,0,0,0.6);
 }
 
-/* Tên xanh */
+/* ĐỎ */
+.red {
+  background: linear-gradient(135deg, #ff1a1a, #800000);
+}
+
+/* XANH */
 .blue {
-  background: linear-gradient(135deg, #0066ff, #003399);
-  padding:10px 20px;
-  border-radius:10px;
-  color:#fff;
-  font-weight:bold;
-  box-shadow:0 4px 10px rgba(0,0,0,0.5);
+  background: linear-gradient(135deg, #1a75ff, #002b80);
 }
 
 /* PANEL */
@@ -87,8 +92,8 @@ button {
 
 <!-- OVERLAY -->
 <div class="overlay">
-  <div class="red" id="name1">Đỏ</div>
-  <div class="blue" id="name2">Xanh</div>
+  <div class="player red" id="name1">Đỏ</div>
+  <div class="player blue" id="name2">Xanh</div>
 </div>
 
 <!-- VIDEO -->
