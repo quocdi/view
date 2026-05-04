@@ -111,29 +111,34 @@ button {
   color:white;
   cursor:pointer;
 }
-  /* 📱 MOBILE FIX */
+/* 📱 FIX PANEL MOBILE */
 @media (max-width: 768px) {
 
-  .player {
-    font-size: 16px;      /* nhỏ lại */
-    padding: 8px 16px;    /* gọn lại */
-    border-radius: 8px;
+  .panel {
+    flex-direction: column;   /* xếp dọc */
+    width: 90%;
+    left: 50%;
+    transform: translateX(-50%);
+    gap: 10px;
+    padding: 12px;
   }
 
-  .red {
-    left: 10px;           /* sát mép */
+  .panel input {
+    width: 100%;
+    font-size: 16px;
+    padding: 10px;
   }
 
-  .blue {
-    right: 10px;
+  .panel button {
+    width: 100%;
+    font-size: 16px;
+    padding: 12px;
   }
-
-  .overlay {
-    top: 10px;            /* kéo lên chút */
-  }
-
+.panel button {
+  background:#00c853;
+  font-weight: bold;
 }
-  font-size: clamp(14px, 2.5vw, 22px);
+}
 </style>
 </head>
 
