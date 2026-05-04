@@ -117,8 +117,8 @@ const blue = url.get("x") || "Xanh";
 document.getElementById("name1").innerText = red;
 document.getElementById("name2").innerText = blue;
 
-// ẩn panel khi live
-if (url.get("live") === "1") {
+// ẩn panel nếu có live=1 HOẶC có tên trong link (OBS)
+if (url.get("live") === "1" || url.get("d") || url.get("x")) {
   document.getElementById("panel").style.display = "none";
 }
 
