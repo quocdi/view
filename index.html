@@ -20,6 +20,7 @@ iframe {
   border:none;
 }
 
+/* OVERLAY */
 .overlay {
   position: fixed;
   top: 20px;
@@ -44,13 +45,13 @@ iframe {
   box-shadow: 0 6px 15px rgba(0,0,0,0.6);
 }
 
-/* 🔴 BÊN TRÁI */
+/* 🔴 */
 .red {
   left: 80px;
   background: linear-gradient(135deg, #ff1a1a, #800000);
 }
 
-/* 🔵 BÊN PHẢI */
+/* 🔵 */
 .blue {
   right: 80px;
   background: linear-gradient(135deg, #1a75ff, #002b80);
@@ -106,31 +107,28 @@ button {
 </div>
 
 <script>
-// Ẩn panel khi live
-const urlParams = new URLSearchParams(window.location.search);
-if (urlParams.get("live") === "1") {
+// lấy tên từ URL
+const url = new URLSearchParams(window.location.search);
+
+const red = url.get("d") || "Đỏ";
+const blue = url.get("x") || "Xanh";
+
+// hiển thị tên
+document.getElementById("name1").innerText = red;
+document.getElementById("name2").innerText = blue;
+
+// ẩn panel khi live
+if (url.get("live") === "1") {
   document.getElementById("panel").style.display = "none";
 }
 
-// Load lại dữ liệu
-window.onload = () => {
-  if(localStorage.name1) name1.innerText = localStorage.name1;
-  if(localStorage.name2) name2.innerText = localStorage.name2;
-};
-
-// Update tên
+// khi bấm cập nhật → reload link mới
 function update() {
-  const n1 = input1.value;
-  const n2 = input2.value;
+  const n1 = document.getElementById("input1").value || "Đỏ";
+  const n2 = document.getElementById("input2").value || "Xanh";
 
-  if(n1){
-    name1.innerText = n1;
-    localStorage.name1 = n1;
-  }
-  if(n2){
-    name2.innerText = n2;
-    localStorage.name2 = n2;
-  }
+  const newURL = `?d=${encodeURIComponent(n1)}&x=${encodeURIComponent(n2)}`;
+  window.location.search = newURL;
 }
 </script>
 
