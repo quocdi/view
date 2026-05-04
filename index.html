@@ -2,7 +2,7 @@
 <html lang="vi">
 <head>
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;700&display=swap" rel="stylesheet">
-  <meta charset="UTF-8">
+<meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>KĐQ Live Stream</title>
 
@@ -178,8 +178,8 @@ if (url.get("live") === "1" || url.get("d") || url.get("x")) {
 
 // khi bấm cập nhật → reload link mới
 function update() {
-  const n1 = document.getElementById("input1").value || "Đỏ";
-  const n2 = document.getElementById("input2").value || "Xanh";
+  const n1 = document.getElementById("input1").value || "Tiên";
+  const n2 = document.getElementById("input2").value || "Hậu";
 
   const newURL = `?d=${encodeURIComponent(n1)}&x=${encodeURIComponent(n2)}`;
   window.location.search = newURL;
