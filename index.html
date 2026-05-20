@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>KĐQ Live Stream - Pro Drag Overlay</title>
+    <title>KĐQ Live Stream - Fixed Drag Overlay</title>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;800&display=swap" rel="stylesheet">
     <style>
         * {
@@ -41,7 +41,7 @@
             border: none;
         }
 
-        /* --- HỆ THỐNG OVERLAY KÉO THẢ --- */
+        /* --- HỆ THỐNG OVERLAY KÉO THẢ TỰ DO --- */
         .overlay-container {
             position: fixed;
             top: 0;
@@ -52,19 +52,18 @@
             pointer-events: none;
         }
 
-        /* Kích hoạt chế độ kéo thả tự do bằng tọa độ tuyệt đối */
         .draggable {
             position: absolute !important;
             pointer-events: auto !important; 
             cursor: move !important;
             touch-action: none;
-            will-change: top, left; /* Tối ưu hóa mượt mà cho trình duyệt */
+            will-change: transform;
         }
 
-        /* BANNER GIẢI ĐẤU (Tọa độ mặc định ban đầu nằm giữa sát top) */
+        /* BANNER GIẢI ĐẤU - Đóng đinh tọa độ ban đầu bằng px ở giữa sát top */
         .tournament-box {
             top: 0;
-            left: calc(50% - 150px); /* Tự căn giữa thủ công bằng pixel để tránh xung đột kéo thả */
+            left: calc(50% - 150px); 
             width: 300px;
             background: linear-gradient(180deg, rgba(25, 25, 25, 0.95), rgba(5, 5, 5, 0.95));
             padding: 8px 15px;
@@ -85,29 +84,32 @@
             backdrop-filter: blur(8px);
         }
 
-        /* Tọa độ mặc định của ô Đỏ (Tiên) */
+        /* Ô Đỏ (Tiên) - Định vị sẵn bằng PX góc trái */
         #dispRed {
             top: 65px;
             left: 80px;
         }
 
-        /* Tọa độ mặc định của ô Xanh (Hậu) */
+        /* Ô Xanh (Hậu) - Định vị sẵn bằng PX góc phải chuẩn chỉ, không sợ bay bậy */
         #dispBlue {
             top: 65px;
             right: 80px;
         }
 
         .player {
-            min-width: 200px;
-            padding: 12px 25px;
+            width: 200px; /* Khóa cứng chiều rộng cố định để không bị dài ngoằng */
+            padding: 12px 20px;
             border-radius: 10px;
             font-weight: 700;
-            font-size: 26px;
+            font-size: 24px;
             color: #fff;
             text-align: center;
             backdrop-filter: blur(10px);
             border: 2px solid rgba(255,255,255,0.2);
             box-shadow: 0 8px 25px rgba(0,0,0,0.6);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis; /* Tên dài quá tự hiện dấu chấm gọn gàng */
         }
 
         .red { background: linear-gradient(135deg, #cc0000, #660000); }
@@ -178,21 +180,10 @@
 
         /* Mobile */
         @media (max-width: 768px) {
-            .tournament-box { 
-                width: 180px; 
-                left: calc(50% - 90px); 
-                font-size: 11px; 
-                padding: 4px 10px; 
-                border-radius: 0 0 10px 10px; 
-            }
+            .tournament-box { width: 160px; left: calc(50% - 80px); font-size: 11px; }
             #dispRed { top: 50px; left: 15px; }
             #dispBlue { top: 50px; left: auto; right: 15px; }
-            .player { 
-                min-width: 110px; 
-                font-size: 14px; 
-                padding: 6px 10px; 
-                border-radius: 6px;
-            }
+            .player { width: 110px; font-size: 14px; padding: 6px 5px; }
             .control-panel { flex-direction: column; width: 90%; bottom: 10px; padding: 10px; }
             #inTour, #inRed, #inBlue { width: 100%; }
         }
@@ -207,7 +198,7 @@
     <div class="overlay-container">
         <div class="tournament-box draggable" id="dispTour">GIẢI ĐẤU CỜ TƯỚNG</div>
         <div class="player red draggable" id="dispRed">TIÊN</div>
-        <div class="player blue" id="dispBlue">HẬU</div>
+        <div class="player blue draggable" id="dispBlue">HẬU</div>
     </div>
 
     <div class="control-panel" id="panel">
@@ -275,35 +266,23 @@
             if (e.key === 'Enter') { applyInfo(); }
         });
 
-        // 🛠️ HỆ THỐNG KÉO THẢ SỬA LỖI MỚI - CHUẨN XÁC TUYỆT ĐỐI
+        // 🛠️ HỆ THỐNG KÉO THẢ MỚI - FIX CỨNG TỌA ĐỘ BAN ĐẦU THEO PX
         const draggables = document.querySelectorAll('.draggable');
 
         draggables.forEach(el => {
             let active = false;
-            let currentX;
-            let currentY;
-            let initialX;
-            let initialY;
-            let xOffset = 0;
-            let yOffset = 0;
-
-            // Khởi tạo vị trí ban đầu dựa trên vị trí hiển thị thực tế
-            const rect = el.getBoundingClientRect();
-            // Đối với thằng Blue neo lề phải, ta chuyển đổi nó về lề trái luôn để dễ tính toán
-            el.style.left = rect.left + "px";
-            el.style.top = rect.top + "px";
-            el.style.right = "auto";
+            let currentX = 0;
+            let currentY = 0;
+            let initialX = 0;
+            let initialY = 0;
 
             function dragStart(e) {
-                if (e.type === "touchstart") {
-                    initialX = e.touches[0].clientX - xOffset;
-                    initialY = e.touches[0].clientY - yOffset;
-                } else {
-                    initialX = e.clientX - xOffset;
-                    initialY = e.clientY - yOffset;
-                }
+                const clientX = e.type === "touchstart" ? e.touches[0].clientX : e.clientX;
+                const clientY = e.type === "touchstart" ? e.touches[0].clientY : e.clientY;
+                
+                initialX = clientX - currentX;
+                initialY = clientY - currentY;
 
-                // Chỉ kích hoạt kéo khi click trúng vật thể
                 if (e.target === el) {
                     active = true;
                 }
@@ -311,40 +290,28 @@
 
             function dragMove(e) {
                 if (active) {
-                    e.preventDefault(); // Chặn cuộn trang trên điện thoại khi kéo
+                    e.preventDefault(); 
                     
-                    if (e.type === "touchmove") {
-                        currentX = e.touches[0].clientX - initialX;
-                        currentY = e.touches[0].clientY - initialY;
-                    } else {
-                        currentX = e.clientX - initialX;
-                        currentY = e.clientY - initialY;
-                    }
+                    const clientX = e.type === "touchmove" ? e.touches[0].clientX : e.clientX;
+                    const clientY = e.type === "touchmove" ? e.touches[0].clientY : e.clientY;
+                    
+                    currentX = clientX - initialX;
+                    currentY = clientY - initialY;
 
-                    xOffset = currentX;
-                    yOffset = currentY;
-
-                    // Di chuyển bằng thuộc tính transform tăng tốc phần cứng cực mượt
-                    setTranslate(currentX, currentY, el);
+                    el.style.transform = "translate3d(" + currentX + "px, " + currentY + "px, 0)";
                 }
             }
 
             function dragEnd() {
-                initialX = currentX;
-                initialY = currentY;
                 active = false;
             }
 
-            function setTranslate(xPos, yPos, el) {
-                el.style.transform = "translate3d(" + xPos + "px, " + yPos + "px, 0)";
-            }
-
-            // Gắn sự kiện chuột (PC)
+            // Sự kiện chuột (PC)
             el.addEventListener("mousedown", dragStart, false);
             document.addEventListener("mousemove", dragMove, false);
             document.addEventListener("mouseup", dragEnd, false);
 
-            // Gắn sự kiện cảm ứng (Điện thoại)
+            // Sự kiện cảm ứng (Điện thoại)
             el.addEventListener("touchstart", dragStart, { passive: false });
             document.addEventListener("touchmove", dragMove, { passive: false });
             document.addEventListener("touchend", dragEnd, false);
