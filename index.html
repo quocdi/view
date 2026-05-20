@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>KĐQ Live Stream - Fixed Absolute Overlay</title>
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;800&display=swap" rel="stylesheet">
+    <title>KĐQ Live Stream - Strict Control Overlay</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght=600;800&display=swap" rel="stylesheet">
     <style>
         * {
             box-sizing: border-box;
@@ -50,7 +50,6 @@
             pointer-events: none;
         }
 
-        /* DÙNG TRANSITION VÀ CỐ ĐỊNH BAN ĐẦU */
         .wrapper-box {
             position: absolute !important;
             pointer-events: auto !important;
@@ -123,7 +122,7 @@
         
         .tournament-box + .resizer { background: #FFD700; }
 
-        /* VỊ TRÍ GỐC SET SẴN TRÊN TỌA ĐỘ TUYỆT ĐỐI */
+        /* VỊ TRÍ GỐC CỐ ĐỊNH */
         #wrapTour { top: 0; left: 0; width: 350px; min-height: 50px; }
         #wrapRed { top: 0; left: 0; width: 220px; min-height: 60px; }
         #wrapBlue { top: 0; left: 0; width: 220px; min-height: 60px; }
@@ -236,14 +235,13 @@
         const panel = document.getElementById("panel");
         const btnFs = document.getElementById("fsBtn");
 
-        // Quản lý dữ liệu vị trí bằng Object độc lập để không phụ thuộc vào CSS của trình duyệt
+        // Quản lý dữ liệu bộ nhớ vị trí gốc
         const state = {
             wrapTour: { x: window.innerWidth/2 - 175, y: 10, w: 350, h: 50 },
             wrapRed: { x: 80, y: 75, w: 220, h: 60 },
             wrapBlue: { x: window.innerWidth - 300, y: 75, w: 220, h: 60 }
         };
 
-        // Chỉnh vị trí mặc định mượt hơn cho Mobile ngay từ đầu
         if (window.innerWidth <= 768) {
             state.wrapTour = { x: window.innerWidth/2 - 90, y: 5, w: 180, h: 32 };
             state.wrapRed = { x: 10, y: 45, w: 110, h: 35 };
@@ -268,7 +266,6 @@
             document.querySelectorAll('.resizer').forEach(r => r.style.display = 'none');
         }
 
-        // Đọc tọa độ từ URL nếu có sẵn
         if (posData) {
             try {
                 const parsed = JSON.parse(decodeURIComponent(posData));
@@ -283,7 +280,6 @@
             } catch(e) { console.log("Lỗi đọc vị trí"); }
         }
 
-        // Hàm dựng vẽ vị trí siêu chuẩn bằng Translate đồ họa phần cứng
         function renderBox(id) {
             const el = document.getElementById(id);
             if (!el) return;
@@ -353,11 +349,9 @@
 
         document.addEventListener('keypress', (e) => { if (e.key === 'Enter') applyInfo(); });
 
-        // 🔥 CƠ CHẾ KÉO THẢ TỌA ĐỘ THUẦN - BẤT KHẢ XÂM PHẠM, KHÔNG NHẢY VỊ TRÍ
+        // 🔥 ĐÃ SỬA: CHỈ KÍCH HOẠT KÉO KHI CLICK ĐÚNG VÀO Ô, KHÔNG LẮNG NGHE ĐẠI TRÀ
         let activeId = null, isDragging = false, isResizing = false;
-        let startX, startY;
-        let baseX, baseY, baseW, baseH;
-        let ticking = false;
+        let startX, startY, baseX, baseY, baseW, baseH, ticking = false;
 
         function updateTransform() {
             if (!activeId) { ticking = false; return; }
@@ -366,8 +360,9 @@
         }
 
         const onStart = (e) => {
+            // Tìm chính xác wrapper-box mục tiêu
             const box = e.target.closest('.wrapper-box');
-            if (!box) return;
+            if (!box) return; // Nếu nhấn trúng input hoặc khoảng không -> Bỏ qua ngay lập tức!
 
             activeId = box.id;
             const resizer = box.querySelector('.resizer');
@@ -378,7 +373,6 @@
             startX = clientX;
             startY = clientY;
 
-            // Lấy trực tiếp thông số từ bộ nhớ cache object của hệ thống, không sợ lag trình duyệt
             baseX = state[activeId].x;
             baseY = state[activeId].y;
             baseW = state[activeId].w;
@@ -423,10 +417,15 @@
             activeId = null;
         };
 
-        window.addEventListener('mousedown', onStart);
+        // Gắn sự kiện mousedown/touchstart TRỰC TIẾP vào các ô để bắt chuẩn xác
+        document.querySelectorAll('.wrapper-box').forEach(box => {
+            box.addEventListener('mousedown', onStart);
+            box.addEventListener('touchstart', onStart, { passive: false });
+        });
+
+        // Sự kiện move và end vẫn bắt ở window để tránh bị tuột tay khi di nhanh
         window.addEventListener('mousemove', onMove, { passive: false });
         window.addEventListener('mouseup', onEnd);
-        window.addEventListener('touchstart', onStart, { passive: false });
         window.addEventListener('touchmove', onMove, { passive: false });
         window.addEventListener('touchend', onEnd);
 
