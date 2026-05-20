@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>KĐQ Live Stream - Pro Auto Hide Overlay</title>
+    <title>KĐQ Live Stream - Ultra Smooth 10 Points</title>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;800&display=swap" rel="stylesheet">
     <style>
         * {
@@ -54,7 +54,7 @@
             position: absolute !important;
             pointer-events: auto !important;
             touch-action: none;
-            will-change: transform;
+            will-change: transform, width, height; /* Tối ưu hóa phần cứng đồ họa */
             padding: 0;
             display: inline-block;
         }
@@ -239,7 +239,6 @@
         const panel = document.getElementById("panel");
         const btnFs = document.getElementById("fsBtn");
 
-        // Đọc tham số URL ban đầu
         const u = new URLSearchParams(window.location.search);
         const hasTour = u.get("g");
         const hasRed = u.get("d");
@@ -251,11 +250,9 @@
 
         iframe.src = secureLink;
 
-        // 🔥 THUẬT TOÁN TỰ ĐỘNG ẨN PANEL KHI LINK ĐÃ CÓ TÊN HOẶC CÓ LIVE=1
         if (u.get("live") === "1" || (hasTour && hasRed && hasBlue)) {
             panel.style.display = "none";
             btnFs.style.display = "none";
-            // Ẩn luôn các chấm tròn phóng to thu nhỏ để giao diện sạch hoàn toàn
             document.querySelectorAll('.resizer').forEach(r => r.style.display = 'none');
         }
 
@@ -280,8 +277,6 @@
             document.getElementById("dispRed").innerText = document.getElementById("inRed").value.trim() || "TIÊN";
             document.getElementById("dispBlue").innerText = document.getElementById("inBlue").value.trim() || "HẬU";
             adjustAll();
-            
-            // Khi bấm CẬP NHẬT, tự tạo link chứa tên nhưng CHƯA ẩn panel để người dùng còn chỉnh vị trí kéo thả tiếp
             const newU = `?g=${encodeURIComponent(document.getElementById("dispTour").innerText)}&d=${encodeURIComponent(document.getElementById("dispRed").innerText)}&x=${encodeURIComponent(document.getElementById("dispBlue").innerText)}`;
             window.history.pushState({}, '', newU);
         }
@@ -313,51 +308,116 @@
 
         document.addEventListener('keypress', (e) => { if (e.key === 'Enter') applyInfo(); });
 
-        // HỆ THỐNG KÉO THẢ & RESIZE
+        // 🔥 HỆ THỐNG KÉO THẢ & RESIZE ĐỘC QUYỀN - SIÊU MƯỢT, CHỐNG DÍNH 100%
         const boxes = document.querySelectorAll('.wrapper-box');
-        boxes.forEach(box => {
-            let isDragging = false, isResizing = false;
-            let startX, startY, initialLeft, initialTop, initialWidth, initialHeight;
+        let activeBox = null;
+        let isDragging = false;
+        let isResizing = false;
+
+        let startX, startY;
+        let initialLeft, initialTop;
+        let initialWidth, initialHeight;
+        
+        // Biến lưu trữ tọa độ ảo để cập nhật mượt thông qua RequestAnimationFrame
+        let nextLeft, nextTop, nextWidth, nextHeight;
+        let ticking = false;
+
+        function updateElementTransform() {
+            if (!activeBox) {
+                ticking = false;
+                return;
+            }
+
+            if (isDragging) {
+                activeBox.style.left = nextLeft + 'px';
+                activeBox.style.top = nextTop + 'px';
+            } else if (isResizing) {
+                activeBox.style.width = nextWidth + 'px';
+                activeBox.style.height = nextHeight + 'px';
+                autoFitText(activeBox);
+            }
+
+            ticking = false; // Mở khóa cho khung hình tiếp theo
+        }
+
+        function requestTick() {
+            if (!ticking) {
+                requestAnimationFrame(updateElementTransform);
+                ticking = true;
+            }
+        }
+
+        const onStart = (e) => {
+            // Tìm wrapper-box gần nhất của mục tiêu click
+            const box = e.target.closest('.wrapper-box');
+            if (!box) return;
+
+            activeBox = box;
             const resizer = box.querySelector('.resizer');
 
-            const onStart = (e) => {
-                const clientX = e.type.startsWith('touch') ? e.touches[0].clientX : e.clientX;
-                const clientY = e.type.startsWith('touch') ? e.touches[0].clientY : e.clientY;
-                startX = clientX; startY = clientY;
-                const rect = box.getBoundingClientRect();
-                box.style.left = rect.left + 'px'; box.style.top = rect.top + 'px'; box.style.right = 'auto';
-                initialLeft = rect.left; initialTop = rect.top; initialWidth = rect.width; initialHeight = rect.height;
+            const clientX = e.type.startsWith('touch') ? e.touches[0].clientX : e.clientX;
+            const clientY = e.type.startsWith('touch') ? e.touches[0].clientY : e.clientY;
+            
+            startX = clientX;
+            startY = clientY;
+            
+            const rect = box.getBoundingClientRect();
+            box.style.left = rect.left + 'px';
+            box.style.top = rect.top + 'px';
+            box.style.right = 'auto';
 
-                if (e.target === resizer) { isResizing = true; isDragging = false; } 
-                else { isDragging = true; isResizing = false; }
-            };
+            initialLeft = rect.left;
+            initialTop = rect.top;
+            initialWidth = rect.width;
+            initialHeight = rect.height;
 
-            const onMove = (e) => {
-                if (!isDragging && !isResizing) return;
-                e.preventDefault();
-                const clientX = e.type.startsWith('touch') ? e.touches[0].clientX : e.clientX;
-                const clientY = e.type.startsWith('touch') ? e.touches[0].clientY : e.clientY;
-                const dx = clientX - startX, dy = clientY - startY;
+            if (e.target === resizer) {
+                isResizing = true;
+                isDragging = false;
+            } else {
+                isDragging = true;
+                isResizing = false;
+            }
+        };
 
-                if (isDragging) {
-                    box.style.left = (initialLeft + dx) + 'px';
-                    box.style.top = (initialTop + dy) + 'px';
-                } else if (isResizing) {
-                    box.style.width = Math.max(70, initialWidth + dx) + 'px';
-                    box.style.height = Math.max(25, initialHeight + dy) + 'px';
-                    autoFitText(box);
-                }
-            };
+        const onMove = (e) => {
+            if (!isDragging && !isResizing) return;
+            
+            // Ngăn chặn cuộn màn hình mặc định trên điện thoại khi đang kéo thả
+            if (e.cancelable) e.preventDefault();
 
-            const onEnd = () => { isDragging = false; isResizing = false; };
+            const clientX = e.type.startsWith('touch') ? e.touches[0].clientX : e.clientX;
+            const clientY = e.type.startsWith('touch') ? e.touches[0].clientY : e.clientY;
 
-            box.addEventListener('mousedown', onStart);
-            window.addEventListener('mousemove', onMove);
-            window.addEventListener('mouseup', onEnd);
-            box.addEventListener('touchstart', onStart, { passive: false });
-            window.addEventListener('touchmove', onMove, { passive: false });
-            window.addEventListener('touchend', onEnd);
-        });
+            const dx = clientX - startX;
+            const dy = clientY - startY;
+
+            if (isDragging) {
+                nextLeft = initialLeft + dx;
+                nextTop = initialTop + dy;
+            } else if (isResizing) {
+                nextWidth = Math.max(70, initialWidth + dx);
+                nextHeight = Math.max(25, initialHeight + dy);
+            }
+
+            requestTick(); // Gọi khử lag bằng card đồ họa
+        };
+
+        const onEnd = () => {
+            isDragging = false;
+            isResizing = false;
+            activeBox = null;
+        };
+
+        // Lắng nghe sự kiện chuột trên toàn bộ màn hình (bất khả chiến bại, không sợ văng chuột)
+        window.addEventListener('mousedown', onStart, { passive: false });
+        window.addEventListener('mousemove', onMove, { passive: false });
+        window.addEventListener('mouseup', onEnd);
+
+        // Lắng nghe sự kiện vuốt chạm trên điện thoại
+        window.addEventListener('touchstart', onStart, { passive: false });
+        window.addEventListener('touchmove', onMove, { passive: false });
+        window.addEventListener('touchend', onEnd);
 
         document.addEventListener('contextmenu', e => e.preventDefault());
         document.onkeydown = function(e) {
