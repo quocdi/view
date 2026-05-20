@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>KĐQ Live Stream - Pro Tournament Overlay</title>
+    <title>KĐQ Live Stream - Interactive Drag Overlay</title>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;800&display=swap" rel="stylesheet">
     <style>
         * {
@@ -41,7 +41,7 @@
             border: none;
         }
 
-        /* --- HỆ THỐNG OVERLAY (HIỆN CẢ KHI FULL) --- */
+        /* --- HỆ THỐNG OVERLAY KÉO THẢ --- */
         .overlay-container {
             position: fixed;
             top: 0;
@@ -49,45 +49,52 @@
             width: 100%;
             height: 100%;
             z-index: 10;
-            pointer-events: none;
+            pointer-events: none; /* Giữ click xuyên qua nền */
         }
 
-        /* BANNER GIẢI ĐẤU - SÁT TOP CHÍNH GIỮA, TỰ CO CHỮ */
+        /* Lệnh cho phép các ô con nhận tương tác chuột để kéo thả */
+        .draggable {
+            position: absolute !important;
+            pointer-events: auto !important; 
+            cursor: move !important; /* Biến chuột thành hình mũi tên 4 hướng */
+            touch-action: none; /* Chặn cuộn màn hình trên đt khi đang kéo */
+        }
+
+        /* BANNER GIẢI ĐẤU (Vị trí mặc định ở giữa sát top) */
         .tournament-box {
-            position: absolute;
-            top: 5; /* Đẩy lên sát kịch trần màn hình */
+            top: 0;
             left: 50%;
             transform: translateX(-50%);
             background: linear-gradient(180deg, rgba(25, 25, 25, 0.95), rgba(5, 5, 5, 0.95));
-            padding: 6px 40px;
-            border-radius: 0 0 15px 15px; /* Chỉ bo góc dưới */
+            padding: 8px 40px;
+            border-radius: 0 0 15px 15px;
             border: 1.5px solid rgba(255, 215, 0, 0.6);
-            border-top: none; /* Bỏ viền trên để dính liền vào viền màn hình */
+            border-top: none;
             color: #FFD700;
             font-weight: 800;
-            
-            /* --- LOGIC TỰ ĐỘNG BÓP CHỮ NHỎ LẠI --- */
-            font-size: calc(12px + 0.6vw); /* Tự co giãn theo độ rộng màn hình máy tính/điện thoại */
-            max-width: 45vw; /* Khống chế độ rộng tối đa bằng 45% màn hình */
+            font-size: calc(12px + 0.6vw); 
+            max-width: 45vw; 
             display: flex;
             align-items: center;
             justify-content: center;
             text-align: center;
-            word-break: break-word; /* Nếu dài quá thì tự ngắt xuống dòng thay vì tràn ra ngoài */
-            
+            word-break: break-word; 
             letter-spacing: 0.5px;
+            text-transform: uppercase;
             box-shadow: 0 4px 15px rgba(0,0,0,0.8);
             backdrop-filter: blur(8px);
         }
 
-        /* Hai bên tên Player */
-        .player-side {
-            position: absolute;
-            top: 60px; /* Nhích lên trên một chút cho gọn khung hình */
-            width: 100%;
-            display: flex;
-            justify-content: space-between;
-            padding: 0 80px;
+        /* Vị trí mặc định ban đầu của ô Đỏ (Tiên) */
+        #dispRed {
+            top: 65px;
+            left: 80px;
+        }
+
+        /* Vị trí mặc định ban đầu của ô Xanh (Hậu) */
+        #dispBlue {
+            top: 65px;
+            right: 80px;
         }
 
         .player {
@@ -106,7 +113,7 @@
         .red { background: linear-gradient(135deg, #cc0000, #660000); }
         .blue { background: linear-gradient(135deg, #0044cc, #002266); }
 
-        /* --- BẢNG ĐIỀU KHIỂN (ẨN KHI FULL) --- */
+        /* --- BẢNG ĐIỀU KHIỂN --- */
         .control-panel {
             position: fixed;
             bottom: 25px;
@@ -136,8 +143,6 @@
         }
 
         input:focus { border-color: #00c853; }
-        
-        /* Ô nhập giải đấu cho rộng rãi để gõ tên dài */
         #inTour { width: 250px; border-color: #FFD700; }
         #inRed, #inBlue { width: 160px; }
 
@@ -173,10 +178,16 @@
 
         /* Mobile */
         @media (max-width: 768px) {
-            .player-side { padding: 0 15px; top: 45px; }
-            .player { min-width: 110px; font-size: 15px; padding: 6px; }
-            .tournament-box { font-size: 11px; padding: 4px 12px; max-width: 60vw; }
-            .control-panel { flex-direction: column; width: 90%; bottom: 10px; }
+            #dispRed { top: 50px; left: 15px; right: auto; }
+            #dispBlue { top: 50px; right: 15px; left: auto; }
+            .player { 
+                min-width: 28vw; 
+                font-size: 14px; 
+                padding: 6px 10px; 
+                border-radius: 6px;
+            }
+            .tournament-box { font-size: 11px; padding: 4px 15px; max-width: 55vw; border-radius: 0 0 10px 10px; }
+            .control-panel { flex-direction: column; width: 90%; bottom: 10px; padding: 10px; }
             #inTour, #inRed, #inBlue { width: 100%; }
         }
     </style>
@@ -188,11 +199,9 @@
     </div>
 
     <div class="overlay-container">
-        <div class="tournament-box" id="dispTour">GIẢI ĐẤU CỜ TƯỚNG</div>
-        <div class="player-side">
-            <div class="player red" id="dispRed">TIÊN</div>
-            <div class="player blue" id="dispBlue">HẬU</div>
-        </div>
+        <div class="tournament-box draggable" id="dispTour">GIẢI ĐẤU CỜ TƯỚNG</div>
+        <div class="player red draggable" id="dispRed">TIÊN</div>
+        <div class="player blue draggable" id="dispBlue">HẬU</div>
     </div>
 
     <div class="control-panel" id="panel">
@@ -260,10 +269,9 @@
             if (e.key === 'Enter') { applyInfo(); }
         });
 
-        document.addEventListener('contextmenu', e => e.preventDefault());
-        document.onkeydown = function(e) {
-            if (e.keyCode == 123 || (e.ctrlKey && e.shiftKey && [73, 74, 67].includes(e.keyCode)) || (e.ctrlKey && e.keyCode == 85)) return false;
-        };
-    </script>
-</body>
-</html>
+        // 🛠️ LOGIC KÉO THẢ MƯỢT MÀ CHO CẢ CHUỘT VÀ ĐIỆN THOẠI
+        const draggables = document.querySelectorAll('.draggable');
+
+        draggables.forEach(el => {
+            let isDragging = false;
+            let startX, startY, initialLeft, initialTop
