@@ -266,7 +266,7 @@
             if (e.key === 'Enter') { applyInfo(); }
         });
 
-        // 🛠️ HỆ THỐNG KÉO THẢ MỚI - FIX CỨNG TỌA ĐỘ BAN ĐẦU THEO PX
+      // 🛠️ HỆ THỐNG KÉO THẢ CHỐNG DÍNH CHUỘT TUYỆT ĐỐI
         const draggables = document.querySelectorAll('.draggable');
 
         draggables.forEach(el => {
@@ -289,32 +289,34 @@
             }
 
             function dragMove(e) {
-                if (active) {
-                    e.preventDefault(); 
-                    
-                    const clientX = e.type === "touchmove" ? e.touches[0].clientX : e.clientX;
-                    const clientY = e.type === "touchmove" ? e.touches[0].clientY : e.clientY;
-                    
-                    currentX = clientX - initialX;
-                    currentY = clientY - initialY;
+                if (!active) return; // Nếu không active thì biến, không chạy bậy
+                
+                e.preventDefault(); 
+                
+                const clientX = e.type === "touchmove" ? e.touches[0].clientX : e.clientX;
+                const clientY = e.type === "touchmove" ? e.touches[0].clientY : e.clientY;
+                
+                currentX = clientX - initialX;
+                currentY = clientY - initialY;
 
-                    el.style.transform = "translate3d(" + currentX + "px, " + currentY + "px, 0)";
-                }
+                el.style.transform = "translate3d(" + currentX + "px, " + currentY + "px, 0)";
             }
 
             function dragEnd() {
-                active = false;
+                active = false; // Ép về sai để ngắt kéo dứt khoát
             }
 
-            // Sự kiện chuột (PC)
+            // Bắt đầu kéo từ vật thể
             el.addEventListener("mousedown", dragStart, false);
-            document.addEventListener("mousemove", dragMove, false);
-            document.addEventListener("mouseup", dragEnd, false);
-
-            // Sự kiện cảm ứng (Điện thoại)
             el.addEventListener("touchstart", dragStart, { passive: false });
-            document.addEventListener("touchmove", dragMove, { passive: false });
-            document.addEventListener("touchend", dragEnd, false);
+
+            // 🔥 QUAN TRỌNG: Lắng nghe di chuyển và thả ra trên TOÀN BỘ MÀN HÌNH (window) 
+            // để chuột có văng ra ngoài ô thì vẫn bắt được lệnh thả.
+            window.addEventListener("mousemove", dragMove, false);
+            window.addEventListener("mouseup", dragEnd, false);
+
+            window.addEventListener("touchmove", dragMove, { passive: false });
+            window.addEventListener("touchend", dragEnd, false);
         });
 
         // 🔐 BẢO MẬT: Khóa chuột phải và F12
