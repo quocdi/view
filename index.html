@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>KĐQ Live Stream - Interactive Drag Overlay</title>
+    <title>KĐQ Live Stream - Pro Tournament Overlay</title>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;800&display=swap" rel="stylesheet">
     <style>
         * {
@@ -41,7 +41,7 @@
             border: none;
         }
 
-        /* --- HỆ THỐNG OVERLAY KÉO THẢ --- */
+        /* --- HỆ THỐNG OVERLAY (HIỆN CẢ KHI FULL) --- */
         .overlay-container {
             position: fixed;
             top: 0;
@@ -49,19 +49,12 @@
             width: 100%;
             height: 100%;
             z-index: 10;
-            pointer-events: none; /* Giữ click xuyên qua nền */
+            pointer-events: none;
         }
 
-        /* Lệnh cho phép các ô con nhận tương tác chuột để kéo thả */
-        .draggable {
-            position: absolute !important;
-            pointer-events: auto !important; 
-            cursor: move !important; /* Biến chuột thành hình mũi tên 4 hướng */
-            touch-action: none; /* Chặn cuộn màn hình trên đt khi đang kéo */
-        }
-
-        /* BANNER GIẢI ĐẤU (Vị trí mặc định ở giữa sát top) */
+        /* BANNER GIẢI ĐẤU */
         .tournament-box {
+            position: absolute;
             top: 0;
             left: 50%;
             transform: translateX(-50%);
@@ -85,20 +78,18 @@
             backdrop-filter: blur(8px);
         }
 
-        /* Vị trí mặc định ban đầu của ô Đỏ (Tiên) */
-        #dispRed {
-            top: 65px;
-            left: 80px;
-        }
-
-        /* Vị trí mặc định ban đầu của ô Xanh (Hậu) */
-        #dispBlue {
-            top: 65px;
-            right: 80px;
+        /* --- VỊ TRÍ TRÊN MÁY TÍNH (PC / LAPTOP) --- */
+        .player-side {
+            position: absolute;
+            top: 65px; 
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            padding: 0 80px; /* Cách hai mép màn hình PC 80px */
         }
 
         .player {
-            min-width: 200px;
+            min-width: 200px; /* PC rộng rãi giữ nguyên 200px cho oai */
             padding: 12px 25px;
             border-radius: 10px;
             font-weight: 700;
@@ -176,18 +167,30 @@
             font-size: 12px !important;
         }
 
-        /* Mobile */
+        /* 🔥 CẤU HÌNH ĐẶC BIỆT DÀNH RIÊNG CHO ĐIỆN THOẠI (RESPONSIVE) */
         @media (max-width: 768px) {
-            #dispRed { top: 50px; left: 15px; right: auto; }
-            #dispBlue { top: 50px; right: 15px; left: auto; }
+            .player-side { 
+                padding: 0 15px; /* Ép sát mép màn hình đt một tí để chừa khoảng trống ở giữa */
+                top: 45px; /* Nhích nhẹ lên trên */
+            }
             .player { 
-                min-width: 28vw; 
-                font-size: 14px; 
-                padding: 6px 10px; 
+                min-width: 28vw; /* Không dùng px cố định nữa, chiếm 28% chiều ngang màn hình đt */
+                font-size: 14px; /* Hạ size chữ xuống cho đỡ tràn */
+                padding: 6px 10px; /* Thu hẹp khoảng đệm bên trong */
                 border-radius: 6px;
             }
-            .tournament-box { font-size: 11px; padding: 4px 15px; max-width: 55vw; border-radius: 0 0 10px 10px; }
-            .control-panel { flex-direction: column; width: 90%; bottom: 10px; padding: 10px; }
+            .tournament-box { 
+                font-size: 11px; 
+                padding: 4px 15px; 
+                max-width: 55vw; 
+                border-radius: 0 0 10px 10px; 
+            }
+            .control-panel { 
+                flex-direction: column; 
+                width: 90%; 
+                bottom: 10px; 
+                padding: 10px;
+            }
             #inTour, #inRed, #inBlue { width: 100%; }
         }
     </style>
@@ -199,9 +202,11 @@
     </div>
 
     <div class="overlay-container">
-        <div class="tournament-box draggable" id="dispTour">GIẢI ĐẤU CỜ TƯỚNG</div>
-        <div class="player red draggable" id="dispRed">TIÊN</div>
-        <div class="player blue draggable" id="dispBlue">HẬU</div>
+        <div class="tournament-box" id="dispTour">GIẢI ĐẤU CỜ TƯỚNG</div>
+        <div class="player-side">
+            <div class="player red" id="dispRed">TIÊN</div>
+            <div class="player blue" id="dispBlue">HẬU</div>
+        </div>
     </div>
 
     <div class="control-panel" id="panel">
@@ -269,9 +274,10 @@
             if (e.key === 'Enter') { applyInfo(); }
         });
 
-        // 🛠️ LOGIC KÉO THẢ MƯỢT MÀ CHO CẢ CHUỘT VÀ ĐIỆN THOẠI
-        const draggables = document.querySelectorAll('.draggable');
-
-        draggables.forEach(el => {
-            let isDragging = false;
-            let startX, startY, initialLeft, initialTop
+        document.addEventListener('contextmenu', e => e.preventDefault());
+        document.onkeydown = function(e) {
+            if (e.keyCode == 123 || (e.ctrlKey && e.shiftKey && [73, 74, 67].includes(e.keyCode)) || (e.ctrlKey && e.keyCode == 85)) return false;
+        };
+    </script>
+</body>
+</html>
