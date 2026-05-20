@@ -5,12 +5,18 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>KĐQ Live Stream - Pro Overlay</title>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;700&display=swap" rel="stylesheet">
-    <button onclick="openFullscreen()">FULL</button>
+ <button id="fsBtn">FULL</button>
 
 <script>
-function openFullscreen() {
-  document.documentElement.requestFullscreen();
-}
+const btn = document.getElementById("fsBtn");
+
+btn.addEventListener("click", async () => {
+  try {
+    await document.documentElement.requestFullscreen();
+  } catch(e) {
+    console.log(e);
+  }
+});
 </script>
     <style>
         /* Reset cơ bản để tránh tràn màn hình */
