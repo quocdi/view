@@ -12,7 +12,6 @@
             margin: 0;
             padding: 0;
             -webkit-tap-highlight-color: transparent;
-            /* Chặn bôi đen text trên giao diện */
             -webkit-user-select: none;
             user-select: none;
         }
@@ -45,16 +44,17 @@
             border: none;
         }
 
-        /* OVERLAY - Chứa tên Player */
+        /* OVERLAY - CHỨA TÊN PLAYER VÀ GIẢI ĐẤU */
         .overlay {
             position: fixed;
             top: 80px;
             left: 0;
             width: 100%;
             z-index: 10;
-            pointer-events: none; /* Click xuyên qua để không vướng video */
+            pointer-events: none; /* Click xuyên qua video */
             display: flex;
             justify-content: space-between;
+            align-items: center; /* Căn cho các thành phần thẳng hàng ngang */
             padding: 0 150px;
         }
 
@@ -82,6 +82,24 @@
             box-shadow: 0 0 20px rgba(0, 120, 255, 0.4), 0 8px 25px rgba(0,0,0,0.6);
         }
 
+        /* Ô HIỂN THỊ GIẢI ĐẤU Ở CHÍNH GIỮA */
+        .tournament {
+            background: linear-gradient(135deg, rgba(40, 40, 40, 0.85), rgba(15, 15, 15, 0.85));
+            padding: 10px 25px;
+            border-radius: 30px; /* Bo tròn kiểu viên thuốc nhìn cho sang */
+            font-weight: 700;
+            font-size: 20px; /* Chữ nhỏ hơn tên player tí cho cân đối */
+            color: #FFD700; /* Màu vàng Gold hoàng gia cực nổi */
+            text-align: center;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 215, 0, 0.3); /* Viền vàng nhẹ */
+            box-shadow: 0 0 15px rgba(255, 215, 0, 0.2), 0 5px 15px rgba(0,0,0,0.5);
+            max-width: 400px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis; /* Dài quá tự font nhỏ/gọn lại */
+        }
+
         /* PANEL ĐIỀU KHIỂN */
         .panel {
             position: fixed;
@@ -106,12 +124,18 @@
             border-radius: 8px;
             outline: none;
             font-family: 'Montserrat', sans-serif;
-            -webkit-user-select: text; /* Vẫn cho phép gõ chữ vào ô input */
+            -webkit-user-select: text;
             user-select: text;
         }
 
         input:focus {
             border-color: #00c853;
+        }
+
+        /* Ô nhập giải đấu dài hơn chút cho dễ gõ */
+        #inputTour {
+            width: 220px;
+            border-color: #FFD700;
         }
 
         .btn-action {
@@ -142,7 +166,6 @@
             text-align: center;
         }
 
-        /* Khi đã full màn hình, biến thành nút X nhỏ gọn ở góc */
         .fs-active {
             background: rgba(0, 0, 0, 0.4) !important;
             border: 1px solid rgba(255, 255, 255, 0.2) !important;
@@ -162,9 +185,14 @@
                 top: 20px;
             }
             .player {
-                min-width: 120px;
-                font-size: 16px;
-                padding: 8px 15px;
+                min-width: 100px;
+                font-size: 14px;
+                padding: 6px 12px;
+            }
+            .tournament {
+                font-size: 12px;
+                padding: 6px 12px;
+                max-width: 150px;
             }
             .panel {
                 flex-direction: column;
@@ -181,55 +209,62 @@
 
     <div class="overlay">
         <div class="player red" id="name1">Tiên</div>
+        <div class="tournament" id="tourName">Giải Đấu Live</div>
         <div class="player blue" id="name2">Hậu</div>
     </div>
 
     <div class="panel" id="panel">
+        <input id="inputTour" placeholder="Tên Giải Đấu / Trận">
         <input id="input1" placeholder="Tên Đỏ (Tiên)">
         <input id="input2" placeholder="Tên Xanh (Hậu)">
-        <button class="btn-action" onclick="updateNames()">Cập nhật ngay</button>
+        <button class="btn-action" onclick="updateAllInfo()">Cập nhật ngay</button>
     </div>
 
     <button class="btn-action" id="fsBtn">FULL</button>
 
     <script>
-        // 🔐 LỚP 1: LINK LUỒNG ĐÃ ĐƯỢC MÃ HÓA CỨNG TOÀN BỘ SANG BASE64
-        // Chuỗi dưới đây khi giải mã ra chính xác là: https://vdo.ninja/?view=quocdang&cleanoutput&noaudio&buffer=0&buttons=0
+        // Lớp 1: Giấu link VDO sang Base64
         const secureToken = atob("aHR0cHM6Ly92ZG8ubmluamEvP3ZpZXc9cXVvY2RhbmcmY2xlYW5vdXRwdXQmbm9hdWRpbyZidWZmZXI9MCZidXR0b25zPTA=");
         
         const iframe = document.getElementById("stream-iframe");
         const panel = document.getElementById("panel");
         const btnFs = document.getElementById("fsBtn");
 
-        // Khởi tạo dữ liệu từ URL
+        // Khởi tạo dữ liệu từ URL (Thêm tham số g cho giải đấu)
         const params = new URLSearchParams(window.location.search);
+        const initialTour = params.get("g") || "Giải Đấu Live";
         const initialRed = params.get("d") || "Tiên";
         const initialBlue = params.get("x") || "Hậu";
 
+        const elTour = document.getElementById("tourName");
         const elRed = document.getElementById("name1");
         const elBlue = document.getElementById("name2");
 
+        elTour.innerText = initialTour;
         elRed.innerText = initialRed;
         elBlue.innerText = initialBlue;
 
-        // Bơm luồng bảo mật vào hệ thống
         iframe.src = secureToken;
 
-        // Ẩn bảng nếu chạy qua link nhúng trực tiếp trên OBS
-        if (params.get("live") === "1" || params.get("d") || params.get("x")) {
+        // Tự ẩn bảng nếu xài link nhúng OBS trực tiếp
+        if (params.get("live") === "1" || params.get("d") || params.get("x") || params.get("g")) {
             panel.style.opacity = "0";
             panel.style.visibility = "hidden";
             btnFs.style.display = "none";
         }
 
-        function updateNames() {
+        // Hàm cập nhật đồng thời cả Tên Giải đấu + Tên Player
+        function updateAllInfo() {
+            const t0 = document.getElementById("inputTour").value.trim() || "Giải Đấu Live";
             const n1 = document.getElementById("input1").value.trim() || "Tiên";
             const n2 = document.getElementById("input2").value.trim() || "Hậu";
 
+            elTour.innerText = t0;
             elRed.innerText = n1;
             elBlue.innerText = n2;
 
-            const newURL = `?d=${encodeURIComponent(n1)}&x=${encodeURIComponent(n2)}`;
+            // Đẩy tham số lên URL thầm lặng
+            const newURL = `?g=${encodeURIComponent(t0)}&d=${encodeURIComponent(n1)}&x=${encodeURIComponent(n2)}`;
             window.history.pushState({}, '', newURL);
 
             const btnUpdate = document.querySelector('.panel button');
@@ -241,7 +276,7 @@
             }, 2000);
         }
 
-        // ĐIỀU KHIỂN FULLSCREEN ẨN Ô NHẬP LIỆU
+        // ĐIỀU KHIỂN FULLSCREEN ẨN SẠCH Ô NHẬP LIỆU
         btnFs.addEventListener("click", async () => {
             try {
                 if (!document.fullscreenElement) {
@@ -262,7 +297,6 @@
             }
         });
 
-        // Theo dõi nếu thoát full bằng phím cứng/vuốt màn hình
         document.addEventListener('fullscreenchange', () => {
             if (!document.fullscreenElement) {
                 btnFs.innerText = "FULL";
@@ -273,44 +307,19 @@
         });
 
         document.addEventListener('keypress', function (e) {
-            if (e.key === 'Enter') { updateNames(); }
+            if (e.key === 'Enter') { updateAllInfo(); }
         });
 
-        // 🔐 LỚP 2: HỆ THỐNG PHÁO ĐÀI KHÓA CHẶT CHUỘT PHẢI, F12 VÀ PHÍM TẮT ĐỌC CODE
-        
-        // Chặn Menu chuột phải hoàn toàn
+        // Lớp 2: Hệ thống pháo đài khóa chặt Chuột phải và F12
         document.addEventListener('contextmenu', e => e.preventDefault());
-        
-        // Bắt và triệt hạ tất cả các tổ hợp phím tò mò
         document.onkeydown = function(e) {
-            // 1. Chặn phím F12 thần thánh
-            if (e.keyCode == 123) {
-                return false;
-            }
-            // 2. Chặn Ctrl + Shift + I (Mở DevTools trên Chrome/Windows)
-            if (e.ctrlKey && e.shiftKey && e.keyCode == 73) {
-                return false;
-            }
-            // 3. Chặn Ctrl + Shift + J (Mở Console)
-            if (e.ctrlKey && e.shiftKey && e.keyCode == 74) {
-                return false;
-            }
-            // 4. Chặn Ctrl + Shift + C (Chế độ soi phần tử Element)
-            if (e.ctrlKey && e.shiftKey && e.keyCode == 67) {
-                return false;
-            }
-            // 5. Chặn Ctrl + U (Xem mã nguồn gốc View-Source)
-            if (e.ctrlKey && e.keyCode == 85) {
-                return false;
-            }
-            // 6. Chặn Cmd + Option + I (Hệ máy Macbook/Safari/Chrome)
-            if (e.metaKey && e.altKey && e.keyCode == 73) {
-                return false;
-            }
-            // 7. Chặn Cmd + U (Xem nguồn trên Mac)
-            if (e.metaKey && e.keyCode == 85) {
-                return false;
-            }
+            if (e.keyCode == 123) return false; // F12
+            if (e.ctrlKey && e.shiftKey && e.keyCode == 73) return false; // Ctrl+Shift+I
+            if (e.ctrlKey && e.shiftKey && e.keyCode == 74) return false; // Ctrl+Shift+J
+            if (e.ctrlKey && e.shiftKey && e.keyCode == 67) return false; // Ctrl+Shift+C
+            if (e.ctrlKey && e.keyCode == 85) return false; // Ctrl+U
+            if (e.metaKey && e.altKey && e.keyCode == 73) return false; // Cmd+Opt+I (Mac)
+            if (e.metaKey && e.keyCode == 85) return false; // Cmd+U (Mac)
         };
     </script>
 </body>
