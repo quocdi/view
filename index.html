@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>KĐQ Live Stream - Position Lock Overlay</title>
+    <title>KĐQ Live Stream - Anti-Break Radius Overlay</title>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;800&display=swap" rel="stylesheet">
     <style>
         * {
@@ -54,9 +54,10 @@
             position: absolute !important;
             pointer-events: auto !important;
             touch-action: none;
-            will-change: transform, width, height;
+            will-change: transform, width;
             padding: 0;
-            display: inline-block;
+            display: flex;
+            flex-direction: column;
         }
 
         .tournament-box {
@@ -70,7 +71,6 @@
             align-items: center;
             justify-content: center;
             text-align: center;
-            word-break: break-word; 
             letter-spacing: 1px;
             text-transform: uppercase;
             box-shadow: 0 10px 25px rgba(0,0,0,0.7);
@@ -78,9 +78,11 @@
             cursor: move;
             width: 100%;
             height: 100%;
-            padding: 5px 20px;
+            padding: 8px 20px;
+            word-break: break-word;
         }
 
+        /* 🔥 ĐÃ FIX: CHỐNG VỠ KHUNG KHI XUỐNG DÒNG */
         .player {
             border-radius: 15px;
             font-weight: 700;
@@ -89,15 +91,21 @@
             backdrop-filter: blur(12px);
             border: 2px solid rgba(255,255,255,0.25);
             box-shadow: 0 10px 30px rgba(0,0,0,0.6);
+            
+            /* Dùng hệ thống co giãn linh hoạt theo chiều dọc */
             display: flex;
             align-items: center;
             justify-content: center;
             text-align: center;
             cursor: move;
             width: 100%;
-            height: 100%;
-            padding: 0 15px;
-            overflow: hidden;
+            min-height: 100%; /* Đảm bảo phủ kín khung */
+            padding: 5px 15px;
+            
+            /* Cấu hình cho phép ngắt dòng thông minh */
+            white-space: normal; 
+            word-break: break-word; 
+            overflow: visible; 
         }
 
         .red { background: linear-gradient(135deg, #e60000 0%, #800000 100%); }
@@ -119,10 +127,10 @@
         
         .tournament-box + .resizer { background: #FFD700; }
 
-        /* VỊ TRÍ MẶC ĐỊNH PC (Nếu link không có tọa độ sẵn) */
-        #wrapTour { top: 10px; left: calc(50% - 175px); width: 350px; height: 50px; }
-        #wrapRed { top: 75px; left: 80px; width: 220px; height: 60px; }
-        #wrapBlue { top: 75px; right: 80px; width: 220px; height: 60px; }
+        /* VỊ TRÍ MẶC ĐỊNH PC */
+        #wrapTour { top: 10px; left: calc(50% - 175px); width: 350px; min-height: 50px; }
+        #wrapRed { top: 75px; left: 80px; width: 220px; min-height: 60px; }
+        #wrapBlue { top: 75px; right: 80px; width: 220px; min-height: 60px; }
 
         /* PANEL ĐIỀU KHIỂN */
         .control-panel {
@@ -234,12 +242,11 @@
         const panel = document.getElementById("panel");
         const btnFs = document.getElementById("fsBtn");
 
-        // Đọc tham số URL
         const u = new URLSearchParams(window.location.search);
         const hasTour = u.get("g");
         const hasRed = u.get("d");
         const hasBlue = u.get("x");
-        const posData = u.get("pos"); // Tọa độ vị trí lưu trên link
+        const posData = u.get("pos");
 
         document.getElementById("dispTour").innerText = hasTour || "GIẢI ĐẤU CỜ TƯỚNG";
         document.getElementById("dispRed").innerText = hasRed || "TIÊN";
@@ -247,14 +254,13 @@
 
         iframe.src = secureLink;
 
-        // 🔥 NẾU LÀ LINK NHÚNG OBS (Có live=1) -> ẨN BIẾN TOÀN BỘ PANEL VÀ NÚT ZOOM
         if (u.get("live") === "1") {
             panel.style.display = "none";
             btnFs.style.display = "none";
             document.querySelectorAll('.resizer').forEach(r => r.style.display = 'none');
         }
 
-        // TỰ ĐỘNG KHÔI PHỤC VỊ TRÍ ĐẸP TỪ LINK URL SANG OBS / THIẾT BỊ KHÁC
+        // KHÔI PHỤC VỊ TRÍ VÀ KÍCH THƯỚC
         if (posData) {
             try {
                 const positions = JSON.parse(decodeURIComponent(posData));
@@ -264,29 +270,34 @@
                         box.style.left = positions[id].left;
                         box.style.top = positions[id].top;
                         box.style.width = positions[id].width;
-                        box.style.height = positions[id].height;
+                        if(positions[id].height) box.style.minHeight = positions[id].height;
                         box.style.right = 'auto';
                     }
                 });
             } catch(e) { console.log("Lỗi đọc tọa độ"); }
         } else {
-            // Nếu là điện thoại và không có tọa độ cũ, cho vị trí mặc định gọn gàng
             if (window.innerWidth <= 768) {
-                const t = document.getElementById("wrapTour"); t.style.width="180px"; t.style.height="32px"; t.style.left="calc(50% - 90px)"; t.style.top="5px";
-                const r = document.getElementById("wrapRed"); r.style.top="45px"; r.style.left="10px"; r.style.width="110px"; r.style.height="35px";
-                const b = document.getElementById("wrapBlue"); b.style.top="45px"; b.style.right="10px"; b.style.left="auto"; b.style.width="110px"; b.style.height="35px";
+                const t = document.getElementById("wrapTour"); t.style.width="180px"; t.style.minHeight="32px"; t.style.left="calc(50% - 90px)"; t.style.top="5px";
+                const r = document.getElementById("wrapRed"); r.style.top="45px"; r.style.left="10px"; r.style.width="110px"; r.style.minHeight="35px";
+                const b = document.getElementById("wrapBlue"); b.style.top="45px"; b.style.right="10px"; b.style.left="auto"; b.style.width="110px"; b.style.minHeight="35px";
             }
         }
 
+        // TỰ CO GIÃN FONT CHỮ DỰA TRÊN CHIỀU CAO THỰC TẾ CỦA KHUNG
         function autoFitText(box) {
             const innerTextNode = box.querySelector('.player, .tournament-box');
             if(!innerTextNode) return;
+            
             let currentHeight = box.clientHeight;
-            let calculatedFont = Math.floor(currentHeight * 0.45);
+            let calculatedFont = Math.floor(currentHeight * 0.42); // Tính size chữ vừa vặn theo chiều cao ô
             innerTextNode.style.fontSize = calculatedFont + "px";
-            while (innerTextNode.scrollWidth > box.clientWidth && calculatedFont > 8) {
+
+            // Nếu chữ quá dài càn quét hết chiều ngang khung, tự động bóp nhỏ font tiếp chứ không đẩy méo góc bo tròn
+            let maxLoop = 50;
+            while ((innerTextNode.scrollHeight > box.clientHeight || innerTextNode.scrollWidth > box.clientWidth) && calculatedFont > 9 && maxLoop > 0) {
                 calculatedFont--;
                 innerTextNode.style.fontSize = calculatedFont + "px";
+                maxLoop--;
             }
         }
 
@@ -294,21 +305,22 @@
             document.querySelectorAll('.wrapper-box').forEach(box => autoFitText(box));
         }
 
-        // 🔥 HÀM ĐỔI MỚI: BẤM CẬP NHẬT ĐỂ ĐÓNG GÓI TÊN VÀ TOÀN BỘ TỌA ĐỘ LÊN THANH LINK URL
         function applyInfo() {
             document.getElementById("dispTour").innerText = document.getElementById("inTour").value.trim() || "GIẢI ĐẤU CỜ TƯỚNG";
             document.getElementById("dispRed").innerText = document.getElementById("inRed").value.trim() || "TIÊN";
             document.getElementById("dispBlue").innerText = document.getElementById("inBlue").value.trim() || "HẬU";
+            
+            // Chạy fit chữ trước khi lấy tọa độ
             adjustAll();
             
-            // Lấy tọa độ vị trí hiện tại sau khi đã kéo thả đẹp mắt
+            // Gom dữ liệu vị trí đóng gói lên URL
             const positions = {};
             document.querySelectorAll('.wrapper-box').forEach(box => {
                 positions[box.id] = {
                     left: box.style.left,
                     top: box.style.top,
                     width: box.style.width,
-                    height: box.style.height
+                    height: box.clientHeight + 'px' // Lấy chiều cao thực tế chính xác
                 };
             });
 
@@ -317,7 +329,6 @@
             const blueStr = encodeURIComponent(document.getElementById("dispBlue").innerText);
             const posStr = encodeURIComponent(JSON.stringify(positions));
 
-            // Sinh ra chuỗi URL hoàn hảo chứa cả VỊ TRÍ ĐẸP
             const newU = `?g=${tourStr}&d=${redStr}&x=${blueStr}&pos=${posStr}`;
             window.history.pushState({}, '', newU);
         }
@@ -347,7 +358,7 @@
 
         document.addEventListener('keypress', (e) => { if (e.key === 'Enter') applyInfo(); });
 
-        // HỆ THỐNG KÉO THẢ SMOOTH
+        // HỆ THỐNG KÉO THẢ VÀ BIẾN ĐỔI KÍCH THƯỚC ULTRA SMOOTH
         const boxes = document.querySelectorAll('.wrapper-box');
         let activeBox = null, isDragging = false, isResizing = false;
         let startX, startY, initialLeft, initialTop, initialWidth, initialHeight;
@@ -360,7 +371,7 @@
                 activeBox.style.top = nextTop + 'px';
             } else if (isResizing) {
                 activeBox.style.width = nextWidth + 'px';
-                activeBox.style.height = nextHeight + 'px';
+                activeBox.style.minHeight = nextHeight + 'px'; // Đồng bộ kéo zoom theo chiều dọc linh hoạt
                 autoFitText(activeBox);
             }
             ticking = false;
