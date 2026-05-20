@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>KĐQ Live Stream - Fixed Drag Overlay</title>
+    <title>KĐQ Live Stream - Ultra Pro Overlay</title>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;800&display=swap" rel="stylesheet">
     <style>
         * {
@@ -24,7 +24,6 @@
             height: 100vh;
         }
 
-        /* VIDEO NỀN */
         #iframe-wrapper {
             position: fixed;
             top: 0;
@@ -41,7 +40,6 @@
             border: none;
         }
 
-        /* --- HỆ THỐNG OVERLAY KÉO THẢ TỰ DO --- */
         .overlay-container {
             position: fixed;
             top: 0;
@@ -60,106 +58,104 @@
             will-change: transform;
         }
 
-        /* BANNER GIẢI ĐẤU - Đóng đinh tọa độ ban đầu bằng px ở giữa sát top */
+        /* 🔥 Ô GIẢI ĐẤU SIÊU CẤP MỚI */
         .tournament-box {
             top: 0;
-            left: calc(50% - 150px); 
-            width: 300px;
-            background: linear-gradient(180deg, rgba(25, 25, 25, 0.95), rgba(5, 5, 5, 0.95));
-            padding: 8px 15px;
-            border-radius: 0 0 15px 15px;
-            border: 1.5px solid rgba(255, 215, 0, 0.6);
+            left: calc(50% - 175px); 
+            width: 350px;
+            background: linear-gradient(180deg, rgba(30, 30, 30, 0.95) 0%, rgba(10, 10, 10, 0.98) 100%);
+            padding: 10px 20px;
+            
+            /* Bo tròn kiểu hiện đại */
+            border-radius: 0 0 30px 30px; 
+            
+            /* Viền vàng Gold ánh kim */
+            border: 2px solid #D4AF37; 
             border-top: none;
+            
             color: #FFD700;
             font-weight: 800;
-            font-size: 16px;
+            font-size: 17px;
             display: flex;
             align-items: center;
             justify-content: center;
             text-align: center;
             word-break: break-word; 
-            letter-spacing: 0.5px;
+            letter-spacing: 1px;
             text-transform: uppercase;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.8);
-            backdrop-filter: blur(8px);
+            
+            /* Đổ bóng sâu và hiệu ứng phát sáng nhẹ xung quanh viền */
+            box-shadow: 0 10px 25px rgba(0,0,0,0.7), inset 0 -2px 10px rgba(212, 175, 55, 0.2);
+            backdrop-filter: blur(15px);
         }
 
-        /* Ô Đỏ (Tiên) - Định vị sẵn bằng PX góc trái */
-        #dispRed {
-            top: 65px;
-            left: 80px;
-        }
-
-        /* Ô Xanh (Hậu) - Định vị sẵn bằng PX góc phải chuẩn chỉ, không sợ bay bậy */
-        #dispBlue {
-            top: 65px;
-            right: 80px;
-        }
+        #dispRed { top: 75px; left: 80px; }
+        #dispBlue { top: 75px; right: 80px; }
 
         .player {
-            width: 200px; /* Khóa cứng chiều rộng cố định để không bị dài ngoằng */
-            padding: 12px 20px;
-            border-radius: 10px;
+            width: 220px;
+            padding: 14px 20px;
+            border-radius: 15px; /* Bo tròn ô tên player đồng bộ luôn */
             font-weight: 700;
-            font-size: 24px;
+            font-size: 26px;
             color: #fff;
             text-align: center;
-            backdrop-filter: blur(10px);
-            border: 2px solid rgba(255,255,255,0.2);
-            box-shadow: 0 8px 25px rgba(0,0,0,0.6);
+            backdrop-filter: blur(12px);
+            border: 2px solid rgba(255,255,255,0.25);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.6);
             white-space: nowrap;
             overflow: hidden;
-            text-overflow: ellipsis; /* Tên dài quá tự hiện dấu chấm gọn gàng */
+            text-overflow: ellipsis;
         }
 
-        .red { background: linear-gradient(135deg, #cc0000, #660000); }
-        .blue { background: linear-gradient(135deg, #0044cc, #002266); }
+        .red { background: linear-gradient(135deg, #e60000 0%, #800000 100%); }
+        .blue { background: linear-gradient(135deg, #0055ff 0%, #002266 100%); }
 
-        /* --- BẢNG ĐIỀU KHIỂN --- */
+        /* PANEL ĐIỀU KHIỂN */
         .control-panel {
             position: fixed;
             bottom: 25px;
             left: 50%;
             transform: translateX(-50%);
-            background: rgba(15, 15, 15, 0.95);
-            padding: 15px 25px;
-            border-radius: 15px;
+            background: rgba(10, 10, 10, 0.98);
+            padding: 18px 30px;
+            border-radius: 20px;
             display: flex;
-            gap: 12px;
+            gap: 15px;
             z-index: 100;
-            border: 1px solid rgba(255,255,255,0.1);
-            transition: all 0.3s ease;
+            border: 1px solid rgba(255,255,255,0.15);
+            box-shadow: 0 -10px 40px rgba(0,0,0,0.8);
         }
 
         input {
-            background: #252525;
+            background: #1a1a1a;
             color: white;
-            padding: 12px;
-            border: 1px solid #444;
-            border-radius: 8px;
+            padding: 14px;
+            border: 1px solid #333;
+            border-radius: 10px;
             outline: none;
             font-family: 'Montserrat', sans-serif;
-            font-size: 14px;
+            font-size: 15px;
             -webkit-user-select: text;
             user-select: text;
         }
 
-        input:focus { border-color: #00c853; }
-        #inTour { width: 250px; border-color: #FFD700; }
-        #inRed, #inBlue { width: 160px; }
+        input:focus { border-color: #00c853; background: #222; }
+        #inTour { width: 280px; border-color: #D4AF37; }
 
         .btn {
-            padding: 10px 20px;
+            padding: 10px 25px;
             border: none;
-            border-radius: 8px;
-            font-weight: 700;
+            border-radius: 10px;
+            font-weight: 800;
             cursor: pointer;
-            transition: 0.2s;
+            transition: 0.3s;
             color: white;
+            text-transform: uppercase;
         }
 
-        .btn-update { background: #00c853; }
-        .btn-update:hover { background: #00e676; transform: scale(1.05); }
+        .btn-update { background: #00c853; box-shadow: 0 4px 15px rgba(0, 200, 83, 0.3); }
+        .btn-update:hover { background: #00e676; transform: translateY(-2px); }
 
         #fsBtn {
             background: #4D80F5;
@@ -170,21 +166,20 @@
         }
 
         .fs-active-style {
-            background: rgba(255, 255, 255, 0.1) !important;
-            color: #aaa !important;
-            bottom: 10px !important;
-            left: 10px !important;
-            padding: 5px 10px !important;
-            font-size: 12px !important;
+            background: rgba(0,0,0,0.5) !important;
+            color: #fff !important;
+            bottom: 15px !important;
+            left: 15px !important;
+            padding: 8px 12px !important;
+            border: 1px solid rgba(255,255,255,0.2) !important;
         }
 
-        /* Mobile */
         @media (max-width: 768px) {
-            .tournament-box { width: 160px; left: calc(50% - 80px); font-size: 11px; }
-            #dispRed { top: 50px; left: 15px; }
-            #dispBlue { top: 50px; left: auto; right: 15px; }
-            .player { width: 110px; font-size: 14px; padding: 6px 5px; }
-            .control-panel { flex-direction: column; width: 90%; bottom: 10px; padding: 10px; }
+            .tournament-box { width: 200px; left: calc(50% - 100px); font-size: 12px; border-radius: 0 0 20px 20px; }
+            #dispRed { top: 60px; left: 10px; }
+            #dispBlue { top: 60px; left: auto; right: 10px; }
+            .player { width: 130px; font-size: 16px; padding: 8px; border-radius: 10px; }
+            .control-panel { flex-direction: column; width: 92%; bottom: 15px; padding: 15px; }
             #inTour, #inRed, #inBlue { width: 100%; }
         }
     </style>
@@ -232,11 +227,9 @@
             const tour = document.getElementById("inTour").value.trim() || "GIẢI ĐẤU CỜ TƯỚNG";
             const red = document.getElementById("inRed").value.trim() || "TIÊN";
             const blue = document.getElementById("inBlue").value.trim() || "HẬU";
-
             document.getElementById("dispTour").innerText = tour;
             document.getElementById("dispRed").innerText = red;
             document.getElementById("dispBlue").innerText = blue;
-
             const newU = `?g=${encodeURIComponent(tour)}&d=${encodeURIComponent(red)}&x=${encodeURIComponent(blue)}`;
             window.history.pushState({}, '', newU);
         }
@@ -262,64 +255,42 @@
             }
         });
 
-        document.addEventListener('keypress', function (e) {
-            if (e.key === 'Enter') { applyInfo(); }
-        });
+        document.addEventListener('keypress', (e) => { if (e.key === 'Enter') applyInfo(); });
 
-      // 🛠️ HỆ THỐNG KÉO THẢ CHỐNG DÍNH CHUỘT TUYỆT ĐỐI
+        // 🛠️ HỆ THỐNG KÉO THẢ CHỐNG DÍNH CHUỘT TUYỆT ĐỐI
         const draggables = document.querySelectorAll('.draggable');
-
         draggables.forEach(el => {
             let active = false;
-            let currentX = 0;
-            let currentY = 0;
-            let initialX = 0;
-            let initialY = 0;
+            let currentX = 0, currentY = 0, initialX = 0, initialY = 0;
 
             function dragStart(e) {
                 const clientX = e.type === "touchstart" ? e.touches[0].clientX : e.clientX;
                 const clientY = e.type === "touchstart" ? e.touches[0].clientY : e.clientY;
-                
                 initialX = clientX - currentX;
                 initialY = clientY - currentY;
-
-                if (e.target === el) {
-                    active = true;
-                }
+                if (e.target === el) active = true;
             }
 
             function dragMove(e) {
-                if (!active) return; // Nếu không active thì biến, không chạy bậy
-                
-                e.preventDefault(); 
-                
+                if (!active) return;
+                e.preventDefault();
                 const clientX = e.type === "touchmove" ? e.touches[0].clientX : e.clientX;
                 const clientY = e.type === "touchmove" ? e.touches[0].clientY : e.clientY;
-                
                 currentX = clientX - initialX;
                 currentY = clientY - initialY;
-
-                el.style.transform = "translate3d(" + currentX + "px, " + currentY + "px, 0)";
+                el.style.transform = `translate3d(${currentX}px, ${currentY}px, 0)`;
             }
 
-            function dragEnd() {
-                active = false; // Ép về sai để ngắt kéo dứt khoát
-            }
+            function dragEnd() { active = false; }
 
-            // Bắt đầu kéo từ vật thể
             el.addEventListener("mousedown", dragStart, false);
             el.addEventListener("touchstart", dragStart, { passive: false });
-
-            // 🔥 QUAN TRỌNG: Lắng nghe di chuyển và thả ra trên TOÀN BỘ MÀN HÌNH (window) 
-            // để chuột có văng ra ngoài ô thì vẫn bắt được lệnh thả.
             window.addEventListener("mousemove", dragMove, false);
             window.addEventListener("mouseup", dragEnd, false);
-
             window.addEventListener("touchmove", dragMove, { passive: false });
             window.addEventListener("touchend", dragEnd, false);
         });
 
-        // 🔐 BẢO MẬT: Khóa chuột phải và F12
         document.addEventListener('contextmenu', e => e.preventDefault());
         document.onkeydown = function(e) {
             if (e.keyCode == 123 || (e.ctrlKey && e.shiftKey && [73, 74, 67].includes(e.keyCode)) || (e.ctrlKey && e.keyCode == 85)) return false;
