@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>KĐQ Live Stream - Ultra Pro Responsive Overlay</title>
+    <title>KĐQ Live Stream - Drag & Resize Overlay</title>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;800&display=swap" rel="stylesheet">
     <style>
         * {
@@ -50,21 +50,21 @@
             pointer-events: none;
         }
 
-        .draggable {
+        /* Hộp chứa bọc ngoài để hỗ trợ vừa Kéo vừa Zoom */
+        .wrapper-box {
             position: absolute !important;
-            pointer-events: auto !important; 
-            cursor: move !important;
+            pointer-events: auto !important;
             touch-action: none;
             will-change: transform;
+            padding: 0;
+            display: inline-block;
         }
 
-        /* --- CẤU HÌNH TRÊN MÁY TÍNH (PC) --- */
+        /* Ô GIẢI ĐẤU PHÁT TRIỂN CHUẨN */
         .tournament-box {
-            top: 10px; 
-            left: calc(50% - 175px); 
             width: 350px;
+            height: 50px;
             background: linear-gradient(180deg, rgba(30, 30, 30, 0.95) 0%, rgba(10, 10, 10, 0.98) 100%);
-            padding: 10px 20px;
             border-radius: 20px; 
             border: 2px solid #D4AF37; 
             color: #FFD700;
@@ -77,34 +77,62 @@
             word-break: break-word; 
             letter-spacing: 1px;
             text-transform: uppercase;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.7), inset 0 -2px 10px rgba(212, 175, 55, 0.2);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.7);
             backdrop-filter: blur(15px);
+            cursor: move;
+            width: 100%;
+            height: 100%;
+            padding: 5px 20px;
         }
 
-        #dispRed { top: 75px; left: 80px; }
-        #dispBlue { top: 75px; right: 80px; }
-
+        /* Ô PLAYER ĐỎ / XANH */
         .player {
             width: 220px;
-            padding: 14px 20px;
+            height: 60px;
             border-radius: 15px;
             font-weight: 700;
             font-size: 26px;
             color: #fff;
-            text-align: center;
             backdrop-filter: blur(12px);
             border: 2px solid rgba(255,255,255,0.25);
             box-shadow: 0 10px 30px rgba(0,0,0,0.6);
-            
-            /* Logic tự co chữ/ngắt chữ của Player trên PC */
             display: flex;
             align-items: center;
             justify-content: center;
-            word-break: break-word;
+            text-align: center;
+            cursor: move;
+            width: 100%;
+            height: 100%;
+            padding: 0 15px;
+            overflow: hidden;
         }
 
         .red { background: linear-gradient(135deg, #e60000 0%, #800000 100%); }
         .blue { background: linear-gradient(135deg, #0055ff 0%, #002266 100%); }
+
+        /* 🔥 NÚT KÉO ZOOM Ở GÓC DƯỚI BÊN PHẢI */
+        .resizer {
+            width: 14px;
+            height: 14px;
+            background: #fff;
+            border: 2px solid #333;
+            border-radius: 50%;
+            position: absolute;
+            right: -4px;
+            bottom: -4px;
+            cursor: nwse-resize; /* Trỏ chuột chéo góc */
+            z-index: 20;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.5);
+        }
+        
+        .tournament-box + .resizer {
+            background: #FFD700; /* Nút zoom của giải đấu màu vàng cho đẹp */
+        }
+
+        /* VỊ TRÍ MẶC ĐỊNH PC */
+        #wrapTour { top: 10px; left: calc(50% - 175px); width: 350px; height: 50px; }
+        #wrapRed { top: 75px; left: 80px; width: 220px; height: 60px; }
+        #wrapBlue { top: 75px; right: 80px; width: 220px; height: 60px; }
 
         /* PANEL ĐIỀU KHIỂN */
         .control-panel {
@@ -170,37 +198,16 @@
             border: 1px solid rgba(255,255,255,0.2) !important;
         }
 
-        /* 🔥 ĐÃ FIX: ĐOẠN CODE DÀNH RIÊNG CHO ĐIỆN THOẠI (RESPONSIVE) */
+        /* MOBILE CĂN CHỈNH BAN ĐẦU GỌN GÀNG */
         @media (max-width: 768px) {
-            /* Thu nhỏ ô giải đấu cho tinh tế */
-            .tournament-box { 
-                width: 180px; 
-                left: calc(50% - 90px); 
-                font-size: 11px; 
-                padding: 6px 10px; 
-                border-radius: 12px;
-                top: 5px;
-            }
-            
-            /* Tọa độ ban đầu mượt mà của 2 ô tên kì thủ */
-            #dispRed { top: 45px; left: 10px; }
-            #dispBlue { top: 45px; left: auto; right: 10px; }
-            
-            /* Ô chứa tên kì thủ: Thanh mảnh, không lo nuốt màn hình */
-            .player { 
-                width: 25vw; /* Chiếm tối đa 25% độ rộng màn hình điện thoại */
-                font-size: calc(10px + 0.5vw); /* Chữ tự động bóp nhỏ theo màn hình */
-                padding: 6px 8px; /* Thu hẹp khoảng đệm bên trong */
-                border-radius: 8px;
-                font-weight: 600;
-                box-shadow: 0 5px 15px rgba(0,0,0,0.5);
-                border: 1.5px solid rgba(255,255,255,0.2);
-                white-space: normal; /* Cho phép rớt dòng nhẹ nếu tên quá dài */
-            }
-            
-            /* Bảng điều khiển ẩn hiện gọn gàng dưới đáy đt */
+            #wrapTour { width: 180px; height: 32px; left: calc(50% - 90px); top: 5px; }
+            #wrapRed { top: 45px; left: 10px; width: 110px; height: 35px; }
+            #wrapBlue { top: 45px; right: 10px; left: auto; width: 110px; height: 35px; }
+            .tournament-box { font-size: 11px; border-radius: 10px; }
+            .player { font-size: 14px; border-radius: 6px; }
             .control-panel { flex-direction: column; width: 92%; bottom: 15px; padding: 15px; }
             #inTour, #inRed, #inBlue { width: 100%; }
+            .resizer { width: 16px; height: 16px; right: -6px; bottom: -6px; } /* Đt làm nút to xíu dễ chạm ngón tay */
         }
     </style>
 </head>
@@ -211,9 +218,20 @@
     </div>
 
     <div class="overlay-container">
-        <div class="tournament-box draggable" id="dispTour">GIẢI ĐẤU CỜ TƯỚNG</div>
-        <div class="player red draggable" id="dispRed">TIÊN</div>
-        <div class="player blue draggable" id="dispBlue">HẬU</div>
+        <div class="wrapper-box" id="wrapTour">
+            <div class="tournament-box" id="dispTour">GIẢI ĐẤU CỜ TƯỚNG</div>
+            <div class="resizer"></div>
+        </div>
+        
+        <div class="wrapper-box" id="wrapRed">
+            <div class="player red" id="dispRed">TIÊN</div>
+            <div class="resizer"></div>
+        </div>
+        
+        <div class="wrapper-box" id="wrapBlue">
+            <div class="player blue" id="dispBlue">HẬU</div>
+            <div class="resizer"></div>
+        </div>
     </div>
 
     <div class="control-panel" id="panel">
@@ -243,16 +261,41 @@
             btnFs.style.display = "none";
         }
 
+        // TỰ ĐỘNG KHỚP CHỮ THEO CHIỀU CAO/CHIỀU RỘNG Ô KHI ĐỔI KÍCH THƯỚC
+        function autoFitText(box) {
+            const innerTextNode = box.querySelector('.player, .tournament-box');
+            if(!innerTextNode) return;
+
+            let baseSize = innerTextNode.classList.contains('tournament-box') ? 17 : 26;
+            
+            // Tính toán tỷ lệ font chữ dựa theo chiều cao hiện tại của ô sau khi bị kéo zoom
+            let currentHeight = box.clientHeight;
+            let calculatedFont = Math.floor(currentHeight * 0.45); // Font chữ bằng 45% chiều cao ô
+            
+            innerTextNode.style.fontSize = calculatedFont + "px";
+
+            // Nếu chữ dài quá tràn viền ngang thì bóp nhỏ tiếp
+            while (innerTextNode.scrollWidth > box.clientWidth && calculatedFont > 8) {
+                calculatedFont--;
+                innerTextNode.style.fontSize = calculatedFont + "px";
+            }
+        }
+
+        function adjustAll() {
+            document.querySelectorAll('.wrapper-box').forEach(box => autoFitText(box));
+        }
+
         function applyInfo() {
-            const tour = document.getElementById("inTour").value.trim() || "GIẢI ĐẤU CỜ TƯỚNG";
-            const red = document.getElementById("inRed").value.trim() || "TIÊN";
-            const blue = document.getElementById("inBlue").value.trim() || "HẬU";
-            document.getElementById("dispTour").innerText = tour;
-            document.getElementById("dispRed").innerText = red;
-            document.getElementById("dispBlue").innerText = blue;
-            const newU = `?g=${encodeURIComponent(tour)}&d=${encodeURIComponent(red)}&x=${encodeURIComponent(blue)}`;
+            document.getElementById("dispTour").innerText = document.getElementById("inTour").value.trim() || "GIẢI ĐẤU CỜ TƯỚNG";
+            document.getElementById("dispRed").innerText = document.getElementById("inRed").value.trim() || "TIÊN";
+            document.getElementById("dispBlue").innerText = document.getElementById("inBlue").value.trim() || "HẬU";
+            adjustAll();
+            const newU = `?g=${encodeURIComponent(document.getElementById("dispTour").innerText)}&d=${encodeURIComponent(document.getElementById("dispRed").innerText)}&x=${encodeURIComponent(document.getElementById("dispBlue").innerText)}`;
             window.history.pushState({}, '', newU);
         }
+
+        window.addEventListener('load', () => { setTimeout(adjustAll, 200); });
+        window.addEventListener('resize', adjustAll);
 
         btnFs.addEventListener("click", async () => {
             if (!document.fullscreenElement) {
@@ -273,42 +316,94 @@
                 panel.style.opacity = "1";
                 panel.style.visibility = "visible";
             }
+            setTimeout(adjustAll, 150);
         });
 
         document.addEventListener('keypress', (e) => { if (e.key === 'Enter') applyInfo(); });
 
-        // 🛠️ HỆ THỐNG KÉO THẢ CHỐNG DÍNH CHUỘT
-        const draggables = document.querySelectorAll('.draggable');
-        draggables.forEach(el => {
-            let active = false;
-            let currentX = 0, currentY = 0, initialX = 0, initialY = 0;
+        // 🛠️ HỆ THỐNG PHỨC HỢP: VỪA KÉO DI CHUYỂN - VỪA ZOOM TO NHỎ
+        const boxes = document.querySelectorAll('.wrapper-box');
 
-            function dragStart(e) {
-                const clientX = e.type === "touchstart" ? e.touches[0].clientX : e.clientX;
-                const clientY = e.type === "touchstart" ? e.touches[0].clientY : e.clientY;
-                initialX = clientX - currentX;
-                initialY = clientY - currentY;
-                if (e.target === el) active = true;
-            }
+        boxes.forEach(box => {
+            let isDragging = false;
+            let isResizing = false;
+            
+            let startX, startY;
+            let initialLeft, initialTop;
+            let initialWidth, initialHeight;
+            
+            const resizer = box.querySelector('.resizer');
 
-            function dragMove(e) {
-                if (!active) return;
+            // --- HÀM BẮT ĐẦU (CHUỘT & CẢM ỨNG) ---
+            const onStart = (e) => {
+                const clientX = e.type.startsWith('touch') ? e.touches[0].clientX : e.clientX;
+                const clientY = e.type.startsWith('touch') ? e.touches[0].clientY : e.clientY;
+                
+                startX = clientX;
+                startY = clientY;
+                
+                // Thu thập vị trí thực tế để không bị nhảy tọa độ khi đổi hệ thống
+                const rect = box.getBoundingClientRect();
+                box.style.left = rect.left + 'px';
+                box.style.top = rect.top + 'px';
+                box.style.right = 'auto'; // Hủy ghim lề phải để tự do co bóp
+
+                initialLeft = rect.left;
+                initialTop = rect.top;
+                initialWidth = rect.width;
+                initialHeight = rect.height;
+
+                if (e.target === resizer) {
+                    isResizing = true;
+                    isDragging = false;
+                } else {
+                    isDragging = true;
+                    isResizing = false;
+                }
+            };
+
+            // --- HÀM DI CHUYỂN VÀ BIẾN ĐỔI KÍCH THƯỚC ---
+            const onMove = (e) => {
+                if (!isDragging && !isResizing) return;
                 e.preventDefault();
-                const clientX = e.type === "touchmove" ? e.touches[0].clientX : e.clientX;
-                const clientY = e.type === "touchmove" ? e.touches[0].clientY : e.clientY;
-                currentX = clientX - initialX;
-                currentY = clientY - initialY;
-                el.style.transform = `translate3d(${currentX}px, ${currentY}px, 0)`;
-            }
 
-            function dragEnd() { active = false; }
+                const clientX = e.type.startsWith('touch') ? e.touches[0].clientX : e.clientX;
+                const clientY = e.type.startsWith('touch') ? e.touches[0].clientY : e.clientY;
 
-            el.addEventListener("mousedown", dragStart, false);
-            el.addEventListener("touchstart", dragStart, { passive: false });
-            window.addEventListener("mousemove", dragMove, false);
-            window.addEventListener("mouseup", dragEnd, false);
-            window.addEventListener("touchmove", dragMove, { passive: false });
-            window.addEventListener("touchend", dragEnd, false);
+                const dx = clientX - startX;
+                const dy = clientY - startY;
+
+                if (isDragging) {
+                    // Logic di chuyển vị trí ô
+                    box.style.left = (initialLeft + dx) + 'px';
+                    box.style.top = (initialTop + dy) + 'px';
+                } else if (isResizing) {
+                    // Logic bóp méo, co giãn, phóng to thu nhỏ ô
+                    const newW = Math.max(70, initialWidth + dx); // Không cho thu nhỏ quá 70px
+                    const newHeight = Math.max(25, initialHeight + dy); // Không cho thu nhỏ chiều cao quá 25px
+                    
+                    box.style.width = newW + 'px';
+                    box.style.height = newHeight + 'px';
+                    
+                    autoFitText(box); // Ép font chữ chạy theo kích thước mới
+                }
+            };
+
+            // --- HÀM KẾT THÚC ---
+            const onEnd = () => {
+                isDragging = false;
+                isResizing = false;
+            };
+
+            // Gắn sự kiện cho PC chuột
+            box.addEventListener('mousedown', onStart);
+            window.addEventListener('mousemove', onMove);
+            window.addEventListener('mouseup', onEnd);
+
+            // Gắn sự kiện cho Điện thoại ngón tay
+            box.addEventListener('touchstart', onStart, { passive: false });
+            window.addEventListener('touchmove', onMove, { passive: false });
+            window.addEventListener('touchend', onEnd);
         });
 
         document.addEventListener('contextmenu', e => e.preventDefault());
