@@ -3,27 +3,27 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>KĐQ Live Stream - Position Lock Overlay</title>
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;800&display=swap" rel="stylesheet">
+    <title>KĐQ Live Stream - Pro Overlay</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;700&display=swap" rel="stylesheet">
     <style>
+        /* Reset cơ bản để tránh tràn màn hình */
         * {
             box-sizing: border-box;
             margin: 0;
             padding: 0;
             -webkit-tap-highlight-color: transparent;
-            -webkit-user-select: none;
-            user-select: none;
         }
 
         body, html {
             margin: 0;
             background: #000;
             font-family: 'Montserrat', sans-serif;
-            overflow: hidden;
+            overflow: hidden; /* Không cho cuộn trang */
             width: 100%;
             height: 100vh;
         }
 
+        /* KHUNG BỌC IFRAME ĐỂ ZOOM MƯỢT MÀ */
         #iframe-wrapper {
             position: fixed;
             top: 0;
@@ -31,394 +31,336 @@
             width: 100%;
             height: 100%;
             z-index: 1;
+            overflow: hidden;
             background: #000;
         }
 
+        /* VIDEO - Full màn hình */
         iframe {
             width: 100%;
             height: 100%;
             border: none;
+            transition: transform 0.15s ease-out; /* Tạo độ mượt khi gạt zoom */
+            transform-origin: center center;
         }
 
-        .overlay-container {
+        /* OVERLAY - Chứa tên Player */
+        .overlay {
             position: fixed;
-            top: 0;
+            top: 80px; /* Cách top xa hơn xíu cho thoáng */
             left: 0;
             width: 100%;
-            height: 100%;
             z-index: 10;
-            pointer-events: none;
-        }
-
-        .wrapper-box {
-            position: absolute !important;
-            pointer-events: auto !important;
-            touch-action: none;
-            will-change: transform, width, height;
-            padding: 0;
-            display: inline-block;
-        }
-
-        .tournament-box {
-            background: linear-gradient(180deg, rgba(30, 30, 30, 0.95) 0%, rgba(10, 10, 10, 0.98) 100%);
-            border-radius: 20px; 
-            border: 2px solid #D4AF37; 
-            color: #FFD700;
-            font-weight: 800;
-            font-size: 17px;
+            pointer-events: none; /* Click xuyên qua để không vướng video */
             display: flex;
-            align-items: center;
-            justify-content: center;
-            text-align: center;
-            word-break: break-word; 
-            letter-spacing: 1px;
-            text-transform: uppercase;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.7);
-            backdrop-filter: blur(15px);
-            cursor: move;
-            width: 100%;
-            height: 100%;
-            padding: 5px 20px;
+            justify-content: space-between;
+            padding: 0 150px;
         }
 
         .player {
-            border-radius: 15px;
-            font-weight: 700;
-            font-size: 26px;
+            min-width: 180px;
+            padding: 12px 28px;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 28px;
             color: #fff;
-            backdrop-filter: blur(12px);
-            border: 2px solid rgba(255,255,255,0.25);
-            box-shadow: 0 10px 30px rgba(0,0,0,0.6);
-            display: flex;
-            align-items: center;
-            justify-content: center;
             text-align: center;
-            cursor: move;
-            width: 100%;
-            height: 100%;
-            padding: 0 15px;
-            overflow: hidden;
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(255,255,255,0.3);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            transition: all 0.3s ease;
         }
 
-        .red { background: linear-gradient(135deg, #e60000 0%, #800000 100%); }
-        .blue { background: linear-gradient(135deg, #0055ff 0%, #002266 100%); }
-
-        .resizer {
-            width: 14px;
-            height: 14px;
-            background: #fff;
-            border: 2px solid #333;
-            border-radius: 50%;
-            position: absolute;
-            right: -4px;
-            bottom: -4px;
-            cursor: nwse-resize;
-            z-index: 20;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.5);
+        /* Phe Đỏ (Tiên) */
+        .red {
+            background: linear-gradient(135deg, rgba(255, 42, 42, 0.9), rgba(122, 0, 0, 0.9));
+            box-shadow: 0 0 20px rgba(255, 0, 0, 0.4), 0 8px 25px rgba(0,0,0,0.6);
         }
-        
-        .tournament-box + .resizer { background: #FFD700; }
 
-        /* VỊ TRÍ MẶC ĐỊNH PC (Nếu link không có tọa độ sẵn) */
-        #wrapTour { top: 10px; left: calc(50% - 175px); width: 350px; height: 50px; }
-        #wrapRed { top: 75px; left: 80px; width: 220px; height: 60px; }
-        #wrapBlue { top: 75px; right: 80px; width: 220px; height: 60px; }
+        /* Phe Xanh (Hậu) */
+        .blue {
+            background: linear-gradient(135deg, rgba(42, 123, 255, 0.9), rgba(0, 31, 122, 0.9));
+            box-shadow: 0 0 20px rgba(0, 120, 255, 0.4), 0 8px 25px rgba(0,0,0,0.6);
+        }
 
         /* PANEL ĐIỀU KHIỂN */
-        .control-panel {
+        .panel {
             position: fixed;
             bottom: 25px;
             left: 50%;
             transform: translateX(-50%);
-            background: rgba(10, 10, 10, 0.98);
-            padding: 18px 30px;
-            border-radius: 20px;
+            background: rgba(20, 20, 20, 0.9);
+            padding: 15px;
+            border-radius: 15px;
             display: flex;
-            gap: 15px;
-            z-index: 100;
-            border: 1px solid rgba(255,255,255,0.15);
-            box-shadow: 0 -10px 40px rgba(0,0,0,0.8);
+            gap: 10px;
+            z-index: 20;
+            border: 1px solid rgba(255,255,255,0.1);
+            transition: opacity 0.3s ease, visibility 0.3s ease; /* Thêm hiệu ứng ẩn mượt */
         }
 
         input {
-            background: #1a1a1a;
+            background: #333;
             color: white;
-            padding: 14px;
-            border: 1px solid #333;
-            border-radius: 10px;
+            padding: 10px 15px;
+            border: 1px solid #444;
+            border-radius: 8px;
             outline: none;
             font-family: 'Montserrat', sans-serif;
-            font-size: 15px;
-            -webkit-user-select: text;
-            user-select: text;
         }
 
-        input:focus { border-color: #00c853; background: #222; }
-        #inTour { width: 280px; border-color: #D4AF37; }
-        #inRed, #inBlue { width: 160px; }
+        input:focus {
+            border-color: #00c853;
+        }
 
-        .btn {
-            padding: 10px 25px;
+        .btn-action {
+            padding: 10px 20px;
             border: none;
-            border-radius: 10px;
-            font-weight: 800;
-            cursor: pointer;
-            transition: 0.3s;
+            border-radius: 8px;
+            background: #00c853;
             color: white;
-            text-transform: uppercase;
+            font-weight: 700;
+            cursor: pointer;
+            transition: 0.2s;
         }
 
-        .btn-update { background: #00c853; box-shadow: 0 4px 15px rgba(0, 200, 83, 0.3); }
-        .btn-update:hover { background: #00e676; transform: translateY(-2px); }
+        .btn-action:hover {
+            background: #00e676;
+            transform: scale(1.05);
+        }
 
+        /* Nút FULL nổi hẳn ra độc lập khi ẩn panel */
         #fsBtn {
             background: #4D80F5;
+            position: relative;
+            z-index: 25;
+        }
+
+        /* Style riêng khi nút FULL bị tách ra đứng một mình góc dưới màn hình */
+        .fs-isolated {
             position: fixed !important;
             bottom: 25px;
-            left: 25px;
-            z-index: 110;
+            left: 24px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
         }
 
-        .fs-active-style {
-            background: rgba(0,0,0,0.5) !important;
-            color: #fff !important;
-            bottom: 15px !important;
-            left: 15px !important;
-            padding: 8px 12px !important;
-            border: 1px solid rgba(255,255,255,0.2) !important;
+        /* --- THANH ĐIỀU KHIỂN ZOOM DỌC --- */
+        #zoom-control-box {
+            position: fixed;
+            right: 24px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 50px;
+            height: 220px;
+            background-color: rgba(0, 0, 0, 0.7);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 25px;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-between;
+            padding: 15px 0;
+            z-index: 20;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.6);
         }
 
-        /* MOBILE STYLES */
+        .zoom-btn {
+            color: #ffffff;
+            font-size: 22px;
+            font-weight: bold;
+            background: none;
+            border: none;
+            cursor: pointer;
+            width: 100%;
+            height: 35px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .zoom-slider {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 120px;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 2px;
+            transform: rotate(-90deg);
+            margin: 45px 0;
+            outline: none;
+        }
+
+        .zoom-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: #4D80F5;
+            cursor: pointer;
+            box-shadow: 0 0 8px rgba(77, 128, 245, 0.8);
+        }
+
+        /* MOBILE OPTIMIZATION */
         @media (max-width: 768px) {
-            .control-panel { flex-direction: column; width: 92%; bottom: 15px; padding: 15px; }
-            #inTour, #inRed, #inBlue { width: 100%; }
-            .resizer { width: 16px; height: 16px; right: -6px; bottom: -6px; }
+            .overlay {
+                padding: 0 20px;
+                top: 20px;
+            }
+            .player {
+                min-width: 120px;
+                font-size: 16px;
+                padding: 8px 15px;
+            }
+            .panel {
+                flex-direction: column;
+                width: 85%;
+            }
+            #zoom-control-box {
+                right: 12px;
+            }
         }
     </style>
 </head>
 <body>
 
     <div id="iframe-wrapper">
-        <iframe id="main-stream" src="" allow="camera *; microphone *; autoplay *; fullscreen *" allowfullscreen></iframe>
+        <iframe id="stream-iframe" src="" allow="camera *; microphone *; autoplay *; fullscreen *" allowfullscreen></iframe>
     </div>
 
-    <div class="overlay-container">
-        <div class="wrapper-box" id="wrapTour">
-            <div class="tournament-box" id="dispTour">GIẢI ĐẤU CỜ TƯỚNG</div>
-            <div class="resizer"></div>
-        </div>
-        
-        <div class="wrapper-box" id="wrapRed">
-            <div class="player red" id="dispRed">TIÊN</div>
-            <div class="resizer"></div>
-        </div>
-        
-        <div class="wrapper-box" id="wrapBlue">
-            <div class="player blue" id="dispBlue">HẬU</div>
-            <div class="resizer"></div>
-        </div>
+    <div class="overlay">
+        <div class="player red" id="name1">Tiên</div>
+        <div class="player blue" id="name2">Hậu</div>
     </div>
 
-    <div class="control-panel" id="panel">
-        <input id="inTour" placeholder="Tên Giải Đấu">
-        <input id="inRed" placeholder="Tên Bên Đỏ (Tiên)">
-        <input id="inBlue" placeholder="Tên Bên Xanh (Hậu)">
-        <button class="btn btn-update" onclick="applyInfo()">CẬP NHẬT</button>
+    <div class="panel" id="panel">
+        <input id="input1" placeholder="Tên Đỏ (Tiên)">
+        <input id="input2" placeholder="Tên Xanh (Hậu)">
+        <button class="btn-action" onclick="updateNames()">Cập nhật ngay</button>
     </div>
 
-    <button class="btn" id="fsBtn">FULL</button>
+    <button class="btn-action fs-isolated" id="fsBtn">FULL</button>
+
+    <div id="zoom-control-box">
+        <button class="zoom-btn" onclick="changeZoomBtn(1)">+</button>
+        <input type="range" id="zoom-slider" class="zoom-slider" min="100" max="300" step="5" value="100" oninput="applyHybridZoom(this.value)">
+        <button class="zoom-btn" onclick="changeZoomBtn(-1)">-</button>
+    </div>
 
     <script>
-        const secureLink = atob("aHR0cHM6Ly92ZG8ubmluamEvP3ZpZXc9cXVvY2RhbmcmY2xlYW5vdXRwdXQmbm9hdWRpbyZidWZmZXI9MCZidXR0b25zPTA=");
-        const iframe = document.getElementById("main-stream");
+        const secretDomain = atob("aHR0cHM6Ly92ZG8ubmluamEv");
+        const iframe = document.getElementById("stream-iframe");
+        const zoomBox = document.getElementById("zoom-control-box");
         const panel = document.getElementById("panel");
         const btnFs = document.getElementById("fsBtn");
 
-        // Đọc tham số URL
-        const u = new URLSearchParams(window.location.search);
-        const hasTour = u.get("g");
-        const hasRed = u.get("d");
-        const hasBlue = u.get("x");
-        const posData = u.get("pos"); // Tọa độ vị trí lưu trên link
+        // Khởi tạo dữ liệu từ URL
+        const params = new URLSearchParams(window.location.search);
+        const initialRed = params.get("d") || "Tiên";
+        const initialBlue = params.get("x") || "Hậu";
 
-        document.getElementById("dispTour").innerText = hasTour || "GIẢI ĐẤU CỜ TƯỚNG";
-        document.getElementById("dispRed").innerText = hasRed || "TIÊN";
-        document.getElementById("dispBlue").innerText = hasBlue || "HẬU";
+        const elRed = document.getElementById("name1");
+        const elBlue = document.getElementById("name2");
 
-        iframe.src = secureLink;
+        elRed.innerText = initialRed;
+        elBlue.innerText = initialBlue;
 
-        // 🔥 NẾU LÀ LINK NHÚNG OBS (Có live=1) -> ẨN BIẾN TOÀN BỘ PANEL VÀ NÚT ZOOM
-        if (u.get("live") === "1") {
-            panel.style.display = "none";
-            btnFs.style.display = "none";
-            document.querySelectorAll('.resizer').forEach(r => r.style.display = 'none');
-        }
+        // Nạp link luồng
+        iframe.src = `${secretDomain}?view=quocdang&cleanoutput&noaudio&buffer=0&zoom&control&buttons=0`;
 
-        // TỰ ĐỘNG KHÔI PHỤC VỊ TRÍ ĐẸP TỪ LINK URL SANG OBS / THIẾT BỊ KHÁC
-        if (posData) {
-            try {
-                const positions = JSON.parse(decodeURIComponent(posData));
-                Object.keys(positions).forEach(id => {
-                    const box = document.getElementById(id);
-                    if (box) {
-                        box.style.left = positions[id].left;
-                        box.style.top = positions[id].top;
-                        box.style.width = positions[id].width;
-                        box.style.height = positions[id].height;
-                        box.style.right = 'auto';
-                    }
-                });
-            } catch(e) { console.log("Lỗi đọc tọa độ"); }
+        // Ẩn bảng điều khiển vĩnh viễn nếu chạy link OBS nhúng trực tiếp
+        if (params.get("live") === "1" || params.get("d") || params.get("x")) {
+            panel.style.opacity = "0";
+            panel.style.visibility = "hidden";
+            btnFs.style.display = "none"; // OBS Source thì không cần nút Full
+            zoomBox.style.display = "flex";
         } else {
-            // Nếu là điện thoại và không có tọa độ cũ, cho vị trí mặc định gọn gàng
-            if (window.innerWidth <= 768) {
-                const t = document.getElementById("wrapTour"); t.style.width="180px"; t.style.height="32px"; t.style.left="calc(50% - 90px)"; t.style.top="5px";
-                const r = document.getElementById("wrapRed"); r.style.top="45px"; r.style.left="10px"; r.style.width="110px"; r.style.height="35px";
-                const b = document.getElementById("wrapBlue"); b.style.top="45px"; b.style.right="10px"; b.style.left="auto"; b.style.width="110px"; b.style.height="35px";
+            zoomBox.style.display = "flex";
+        }
+
+        function updateNames() {
+            const n1 = document.getElementById("input1").value.trim() || "Tiên";
+            const n2 = document.getElementById("input2").value.trim() || "Hậu";
+
+            elRed.innerText = n1;
+            elBlue.innerText = n2;
+
+            const newURL = `?d=${encodeURIComponent(n1)}&x=${encodeURIComponent(n2)}`;
+            window.history.pushState({}, '', newURL);
+
+            const btnUpdate = document.querySelector('.panel button');
+            btnUpdate.innerText = "Đã lưu!";
+            btnUpdate.style.background = "#2196F3";
+            setTimeout(() => {
+                btnUpdate.innerText = "Cập nhật ngay";
+                btnUpdate.style.background = "#00c853";
+            }, 2000);
+        }
+
+        // ĐIỀU KHIỂN ZOOM HYBRID
+        function applyHybridZoom(inputValue) {
+            const zoomRatio = parseFloat(inputValue) / 100;
+            iframe.style.transform = `scale(${zoomRatio})`;
+            try {
+                iframe.contentWindow.postMessage({ "zoom": parseInt(inputValue) }, '*');
+            } catch (e) {
+                console.log("Lỗi lệnh zoom:", e);
             }
         }
 
-        function autoFitText(box) {
-            const innerTextNode = box.querySelector('.player, .tournament-box');
-            if(!innerTextNode) return;
-            let currentHeight = box.clientHeight;
-            let calculatedFont = Math.floor(currentHeight * 0.45);
-            innerTextNode.style.fontSize = calculatedFont + "px";
-            while (innerTextNode.scrollWidth > box.clientWidth && calculatedFont > 8) {
-                calculatedFont--;
-                innerTextNode.style.fontSize = calculatedFont + "px";
-            }
+        function changeZoomBtn(direction) {
+            const slider = document.getElementById('zoom-slider');
+            let newValue = parseInt(slider.value) + (direction * 20);
+            if (newValue < 100) newValue = 100;
+            if (newValue > 300) newValue = 300;
+            slider.value = newValue;
+            applyHybridZoom(newValue);
         }
 
-        function adjustAll() {
-            document.querySelectorAll('.wrapper-box').forEach(box => autoFitText(box));
-        }
-
-        // 🔥 HÀM ĐỔI MỚI: BẤM CẬP NHẬT ĐỂ ĐÓNG GÓI TÊN VÀ TOÀN BỘ TỌA ĐỘ LÊN THANH LINK URL
-        function applyInfo() {
-            document.getElementById("dispTour").innerText = document.getElementById("inTour").value.trim() || "GIẢI ĐẤU CỜ TƯỚNG";
-            document.getElementById("dispRed").innerText = document.getElementById("inRed").value.trim() || "TIÊN";
-            document.getElementById("dispBlue").innerText = document.getElementById("inBlue").value.trim() || "HẬU";
-            adjustAll();
-            
-            // Lấy tọa độ vị trí hiện tại sau khi đã kéo thả đẹp mắt
-            const positions = {};
-            document.querySelectorAll('.wrapper-box').forEach(box => {
-                positions[box.id] = {
-                    left: box.style.left,
-                    top: box.style.top,
-                    width: box.style.width,
-                    height: box.style.height
-                };
-            });
-
-            const tourStr = encodeURIComponent(document.getElementById("dispTour").innerText);
-            const redStr = encodeURIComponent(document.getElementById("dispRed").innerText);
-            const blueStr = encodeURIComponent(document.getElementById("dispBlue").innerText);
-            const posStr = encodeURIComponent(JSON.stringify(positions));
-
-            // Sinh ra chuỗi URL hoàn hảo chứa cả VỊ TRÍ ĐẸP
-            const newU = `?g=${tourStr}&d=${redStr}&x=${blueStr}&pos=${posStr}`;
-            window.history.pushState({}, '', newU);
-        }
-
-        window.addEventListener('load', () => { setTimeout(adjustAll, 200); });
-        window.addEventListener('resize', adjustAll);
-
+        // 🔥 LOGIC MỚI: Bấm FULL là giấu sạch ô nhập liệu
         btnFs.addEventListener("click", async () => {
-            if (!document.fullscreenElement) {
-                await document.documentElement.requestFullscreen();
-                btnFs.innerText = "✕";
-                btnFs.classList.add("fs-active-style");
-                panel.style.opacity = "0";
-                panel.style.visibility = "hidden";
-            } else { await document.exitFullscreen(); }
+            try {
+                if (!document.fullscreenElement) {
+                    await document.documentElement.requestFullscreen();
+                    btnFs.innerText = "EXIT";
+                    btnFs.style.background = "#f44336";
+                    
+                    // Ẩn mượt mà bảng nhập liệu đi
+                    panel.style.opacity = "0";
+                    panel.style.visibility = "hidden";
+                } else {
+                    await document.exitFullscreen();
+                    btnFs.innerText = "FULL";
+                    btnFs.style.background = "#4D80F5";
+                    
+                    // Hiện lại bảng nhập liệu khi thoát toàn màn hình
+                    panel.style.opacity = "1";
+                    panel.style.visibility = "visible";
+                }
+            } catch(e) {
+                console.log("Lỗi kích hoạt toàn màn hình:", e);
+            }
         });
 
+        // Lắng nghe sự kiện nếu người dùng bấm nút Esc hoặc vuốt màn hình để thoát Fullscreen tự do
         document.addEventListener('fullscreenchange', () => {
             if (!document.fullscreenElement) {
                 btnFs.innerText = "FULL";
-                btnFs.classList.remove("fs-active-style");
+                btnFs.style.background = "#4D80F5";
                 panel.style.opacity = "1";
                 panel.style.visibility = "visible";
             }
-            setTimeout(adjustAll, 150);
         });
 
-        document.addEventListener('keypress', (e) => { if (e.key === 'Enter') applyInfo(); });
+        document.addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') { updateNames(); }
+        });
 
-        // HỆ THỐNG KÉO THẢ SMOOTH
-        const boxes = document.querySelectorAll('.wrapper-box');
-        let activeBox = null, isDragging = false, isResizing = false;
-        let startX, startY, initialLeft, initialTop, initialWidth, initialHeight;
-        let nextLeft, nextTop, nextWidth, nextHeight, ticking = false;
-
-        function updateElementTransform() {
-            if (!activeBox) { ticking = false; return; }
-            if (isDragging) {
-                activeBox.style.left = nextLeft + 'px';
-                activeBox.style.top = nextTop + 'px';
-            } else if (isResizing) {
-                activeBox.style.width = nextWidth + 'px';
-                activeBox.style.height = nextHeight + 'px';
-                autoFitText(activeBox);
-            }
-            ticking = false;
-        }
-
-        function requestTick() {
-            if (!ticking) { requestAnimationFrame(updateElementTransform); ticking = true; }
-        }
-
-        const onStart = (e) => {
-            const box = e.target.closest('.wrapper-box');
-            if (!box) return;
-            activeBox = box;
-            const resizer = box.querySelector('.resizer');
-
-            const clientX = e.type.startsWith('touch') ? e.touches[0].clientX : e.clientX;
-            const clientY = e.type.startsWith('touch') ? e.touches[0].clientY : e.clientY;
-            startX = clientX; startY = clientY;
-            
-            const rect = box.getBoundingClientRect();
-            box.style.left = rect.left + 'px'; box.style.top = rect.top + 'px'; box.style.right = 'auto';
-            initialLeft = rect.left; initialTop = rect.top; initialWidth = rect.width; initialHeight = rect.height;
-
-            if (e.target === resizer) { isResizing = true; isDragging = false; } 
-            else { isDragging = true; isResizing = false; }
-        };
-
-        const onMove = (e) => {
-            if (!isDragging && !isResizing) return;
-            if (e.cancelable) e.preventDefault();
-
-            const clientX = e.type.startsWith('touch') ? e.touches[0].clientX : e.clientX;
-            const clientY = e.type.startsWith('touch') ? e.touches[0].clientY : e.clientY;
-            const dx = clientX - startX, dy = clientY - startY;
-
-            if (isDragging) {
-                nextLeft = initialLeft + dx;
-                nextTop = initialTop + dy;
-            } else if (isResizing) {
-                nextWidth = Math.max(70, initialWidth + dx);
-                nextHeight = Math.max(25, initialHeight + dy);
-            }
-            requestTick();
-        };
-
-        const onEnd = () => { isDragging = false; isResizing = false; activeBox = null; };
-
-        window.addEventListener('mousedown', onStart);
-        window.addEventListener('mousemove', onMove, { passive: false });
-        window.addEventListener('mouseup', onEnd);
-        window.addEventListener('touchstart', onStart, { passive: false });
-        window.addEventListener('touchmove', onMove, { passive: false });
-        window.addEventListener('touchend', onEnd);
-
+        // Bảo mật chặn F12
         document.addEventListener('contextmenu', e => e.preventDefault());
         document.onkeydown = function(e) {
-            if (e.keyCode == 123 || (e.ctrlKey && e.shiftKey && [73, 74, 67].includes(e.keyCode)) || (e.ctrlKey && e.keyCode == 85)) return false;
-        };
+            if (e.keyCode == 123) return false;
+        }
     </script>
 </body>
 </html>
