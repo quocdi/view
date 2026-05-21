@@ -36,17 +36,7 @@
             pointer-events: none;
         }
 
-        .overlay {
-            position: fixed;
-            top: 40px;
-            width: 100%;
-            z-index: 10;
-            display: flex;
-            justify-content: space-between;
-            padding: 0 40px;
-            pointer-events: none;
-        }
-
+     
         .player {
             min-width: 140px;
             padding: 12px 30px;
@@ -74,43 +64,52 @@
             font-family: 'Montserrat', sans-serif; /* Thêm font này vào */
             font-size: 14px;
         }
+.overlay {
+            position: fixed;
+            top: 100px; /* Hạ xuống từ 40px xuống 100px để không chạm header */
+            width: 100%;
+            z-index: 10;
+            display: flex;
+            justify-content: space-between;
+            padding: 0 40px;
+            pointer-events: none;
+        }
 
-        /* CSS cho Tournament Display (Màu đỏ cam) */
         #tournament-display {
             position: fixed;
-            bottom: 50px;
+            bottom: 100px;
             left: 50%;
             transform: translateX(-50%);
             z-index: 10;
-            color: #FF4500; /* Màu Đỏ Cam (OrangeRed) */
+            color: #FFD700; /* Màu vàng Gold cũ */
             font-size: 24px;
             font-weight: 700;
-            text-shadow: 0 2px 10px rgba(255, 69, 0, 0.5), 0 0 20px rgba(0,0,0,0.8);
+            text-shadow: 0 2px 10px rgba(255, 215, 0, 0.5), 0 0 20px rgba(0,0,0,0.8);
             background: rgba(0,0,0,0.6);
             padding: 8px 25px;
             border-radius: 30px;
-            border: 1px solid rgba(255, 69, 0, 0.3);
+            border: 1px solid rgba(255, 215, 0, 0.3);
             pointer-events: none;
             max-width: 80%;
             text-align: center;
             word-wrap: break-word;
+            font-family: 'Montserrat', sans-serif;
         }
 
-        /* CSS cho Extra Info (Giữ nguyên font và hiệu ứng nhưng đổi màu cho hợp tông) */
         #extra-info-display {
             position: fixed;
             top: 10px;
             left: 50%;
             transform: translateX(-50%);
             z-index: 10;
-            color: #FF4500; /* Đồng bộ màu với tournament */
+            color: #FFD700; /* Màu vàng Gold cũ */
             font-size: 20px;
             font-weight: 600;
-            text-shadow: 0 2px 10px rgba(255, 69, 0, 0.5), 0 0 20px rgba(0,0,0,0.8);
+            text-shadow: 0 2px 10px rgba(255, 215, 0, 0.5), 0 0 20px rgba(0,0,0,0.8);
             background: rgba(0,0,0,0.6);
             padding: 8px 20px;
             border-radius: 30px;
-            border: 1px solid rgba(255, 69, 0, 0.3);
+            border: 1px solid rgba(255, 215, 0, 0.3);
             pointer-events: none;
             white-space: nowrap; 
             overflow: hidden;
